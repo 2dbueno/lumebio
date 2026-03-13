@@ -29,15 +29,11 @@ THIRD_PARTY_APPS = [
 ]
 
 LOCAL_APPS = [
-    'core',
     'apps.accounts.apps.AccountsConfig',
     'apps.pages.apps.PagesConfig',
-    'apps.analytics.apps.AnalyticsConfig',
-    'apps.themes.apps.ThemesConfig',
-    'apps.billing.apps.BillingConfig',
-    'apps.notifications.apps.NotificationsConfig',
     'apps.dashboard',
 ]
+
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
