@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Editar Página — LumeBio{% endblock %}
+{% block title %}Editar Página – LumeBio{% endblock %}
 
 {% block content %}
 <div class="min-h-screen" style="background: radial-gradient(ellipse at 50% 0%, rgba(124,58,237,0.12) 0%, transparent 60%), #0a0a14;">
@@ -19,7 +19,7 @@
         <form method="post" class="flex flex-col gap-6">
             {% csrf_token %}
 
-            <!-- Título -->
+            <!-- Informações -->
             <div class="glass rounded-2xl p-6 flex flex-col gap-4">
                 <h2 class="text-white font-semibold">Informações</h2>
 
@@ -43,38 +43,45 @@
                 <h2 class="text-white font-semibold">Aparência</h2>
 
                 <div>
-                    <label class="text-sm text-gray-400 mb-1 block">Tema</label>
-                    <select name="theme"
-                            class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5
-                                   text-white text-sm focus:outline-none focus:border-violet-500 transition">
-                        {% for value, label in page.THEME_CHOICES %}
-                        <option value="{{ value }}" {% if page.theme == value %}selected{% endif %}>{{ label }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
+                    <label class="text-sm text-gray-400 mb-2 block">Tema</label>
+                    <div class="grid grid-cols-3 gap-3">
 
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="text-sm text-gray-400 mb-1 block">Cor de fundo</label>
-                        <div class="flex items-center gap-2">
-                            <input type="color" name="bg_color" value="{{ page.bg_color }}"
-                                   class="w-10 h-10 rounded-lg border border-white/10 bg-transparent cursor-pointer">
-                            <input type="text" value="{{ page.bg_color }}"
-                                   class="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2
-                                          text-white text-sm focus:outline-none focus:border-violet-500 transition"
-                                   oninput="this.previousElementSibling.value=this.value">
-                        </div>
-                    </div>
-                    <div>
-                        <label class="text-sm text-gray-400 mb-1 block">Cor de destaque</label>
-                        <div class="flex items-center gap-2">
-                            <input type="color" name="accent_color" value="{{ page.accent_color }}"
-                                   class="w-10 h-10 rounded-lg border border-white/10 bg-transparent cursor-pointer">
-                            <input type="text" value="{{ page.accent_color }}"
-                                   class="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2
-                                          text-white text-sm focus:outline-none focus:border-violet-500 transition"
-                                   oninput="this.previousElementSibling.value=this.value">
-                        </div>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="theme" value="neon-dark" class="sr-only peer"
+                                   {% if page.theme == 'neon-dark' %}checked{% endif %}>
+                            <div class="rounded-xl p-3 border-2 border-white/10 peer-checked:border-violet-500
+                                        transition text-center peer-checked:bg-violet-500/10"
+                                 style="background: #0F0F1A;">
+                                <div class="w-full h-8 rounded-lg mb-2"
+                                     style="background: linear-gradient(135deg, #7C3AED, #A78BFA);"></div>
+                                <span class="text-xs text-white">Neon Dark</span>
+                            </div>
+                        </label>
+
+                        <label class="cursor-pointer">
+                            <input type="radio" name="theme" value="cyber-blue" class="sr-only peer"
+                                   {% if page.theme == 'cyber-blue' %}checked{% endif %}>
+                            <div class="rounded-xl p-3 border-2 border-white/10 peer-checked:border-blue-500
+                                        transition text-center peer-checked:bg-blue-500/10"
+                                 style="background: #020B18;">
+                                <div class="w-full h-8 rounded-lg mb-2"
+                                     style="background: linear-gradient(135deg, #2563EB, #60A5FA);"></div>
+                                <span class="text-xs text-white">Cyber Blue</span>
+                            </div>
+                        </label>
+
+                        <label class="cursor-pointer">
+                            <input type="radio" name="theme" value="aurora" class="sr-only peer"
+                                   {% if page.theme == 'aurora' %}checked{% endif %}>
+                            <div class="rounded-xl p-3 border-2 border-white/10 peer-checked:border-pink-500
+                                        transition text-center peer-checked:bg-pink-500/10"
+                                 style="background: #0D1117;">
+                                <div class="w-full h-8 rounded-lg mb-2"
+                                     style="background: linear-gradient(135deg, #7C3AED, #DB2777);"></div>
+                                <span class="text-xs text-white">Aurora</span>
+                            </div>
+                        </label>
+
                     </div>
                 </div>
             </div>

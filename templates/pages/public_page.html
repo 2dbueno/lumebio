@@ -3,53 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ page.title }}</title>
+    <title>{{ profile.display_name|default:page.title }}</title>
+
+    <!-- OG Meta Tags -->
+    <meta property="og:title" content="{{ profile.display_name|default:page.title }}">
+    <meta property="og:description" content="{{ profile.bio|default:page.bio }}">
+    <meta property="og:type" content="profile">
+    {% if page.avatar %}
+    <meta property="og:image" content="{{ page.avatar.url }}">
+    {% endif %}
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="{{ profile.display_name|default:page.title }}">
+    <meta name="twitter:description" content="{{ profile.bio|default:page.bio }}">
+
+    {% with t=page.get_theme_vars %}
     <style>
+        :root {
+            --bg: {{ t.bg }};
+            --primary: {{ t.primary }};
+            --accent: {{ t.accent }};
+            --card-bg: {{ t.card_bg }};
+            --card-border: {{ t.card_border }};
+            --text: {{ t.text }};
+            --subtext: {{ t.subtext }};
+        }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            background-color: {{ page.bg_color }};
+            background-color: var(--bg);
             font-family: 'Inter', sans-serif;
             min-height: 100vh;
             display: flex;
             justify-content: center;
             padding: 40px 16px;
+            color: var(--text);
         }
         .container { max-width: 480px; width: 100%; }
         .profile { text-align: center; margin-bottom: 32px; }
         .avatar {
             width: 96px; height: 96px; border-radius: 50%;
-            object-fit: cover; border: 3px solid {{ page.accent_color }};
+            object-fit: cover; border: 3px solid var(--primary);
             margin-bottom: 12px;
         }
         .avatar-placeholder {
             width: 96px; height: 96px; border-radius: 50%;
-            background: {{ page.accent_color }}33;
-            border: 3px solid {{ page.accent_color }};
+            background: var(--card-bg);
+            border: 3px solid var(--primary);
             margin: 0 auto 12px;
         }
-        h1 { color: #fff; font-size: 1.4rem; font-weight: 700; }
-        .bio { color: #aaa; font-size: 0.9rem; margin-top: 6px; }
+        h1 { font-size: 1.4rem; font-weight: 700; }
+        .bio { color: var(--subtext); font-size: 0.9rem; margin-top: 6px; }
         .blocks { display: flex; flex-direction: column; gap: 12px; }
         .block-link {
             display: block; padding: 14px 20px;
-            background: #ffffff10; border: 1px solid #ffffff15;
-            border-radius: 12px; color: #fff;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px; color: var(--text);
             text-decoration: none; font-size: 0.95rem;
             text-align: center; transition: all 0.2s;
+            backdrop-filter: blur(8px);
         }
         .block-link:hover {
-            background: {{ page.accent_color }}33;
-            border-color: {{ page.accent_color }};
+            background: color-mix(in srgb, var(--primary) 20%, transparent);
+            border-color: var(--accent);
             transform: translateY(-2px);
+            box-shadow: 0 4px 20px color-mix(in srgb, var(--primary) 30%, transparent);
         }
         .block-header {
-            color: #aaa; font-size: 0.8rem;
+            color: var(--subtext); font-size: 0.8rem;
             text-transform: uppercase; letter-spacing: 1px;
             text-align: center; padding: 4px 0;
         }
-        .block-divider { border: none; border-top: 1px solid #ffffff15; }
-        .block-text { color: #ccc; font-size: 0.9rem; text-align: center; }
+        .block-divider { border: none; border-top: 1px solid var(--card-border); }
+        .block-text { color: var(--subtext); font-size: 0.9rem; text-align: center; }
     </style>
+    {% endwith %}
 </head>
 <body>
     <div class="container">
@@ -66,7 +93,7 @@
         <div class="blocks">
             {% for block in blocks %}
                 {% if block.block_type == 'link' or block.block_type == 'social' %}
-                    <a href="{% url 'pages:block_redirect' block.id %}" class="block-link" target="_blank">
+                    <a href="{% url 'pages:block_redirect' block.id %}" class="block-link" target="_blank" rel="noopener">
                         {% if block.icon %}{{ block.icon }} {% endif %}{{ block.title }}
                     </a>
                 {% elif block.block_type == 'header' %}

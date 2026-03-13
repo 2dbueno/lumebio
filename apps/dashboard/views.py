@@ -26,8 +26,6 @@ def page_edit(request):
         page.title = request.POST.get('title', page.title)
         page.bio = request.POST.get('bio', page.bio)
         page.theme = request.POST.get('theme', page.theme)
-        page.bg_color = request.POST.get('bg_color', page.bg_color)
-        page.accent_color = request.POST.get('accent_color', page.accent_color)
         page.is_published = request.POST.get('is_published') == 'on'
         page.save()
         messages.success(request, 'Página atualizada!')
