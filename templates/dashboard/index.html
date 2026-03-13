@@ -16,14 +16,13 @@
                 <span class="font-bold text-white">LumeBio</span>
             </div>
             <div class="flex items-center gap-4">
-                <div class="flex items-center gap-4">
                 <a href="{% url 'analytics:index' %}"
-                class="text-sm text-gray-400 hover:text-white transition flex items-center gap-1">
+                   class="text-sm text-gray-400 hover:text-white transition flex items-center gap-1">
                     📊 Analytics
                 </a>
                 <a href="/{{ profile.slug }}/" target="_blank"
                    class="text-sm text-gray-400 hover:text-white transition flex items-center gap-1">
-                    <span>🔗</span> lumebio.com/{{ profile.slug }}
+                    🔗 lumebio.com/{{ profile.slug }}
                 </a>
                 <a href="{% url 'account_logout' %}"
                    class="text-sm text-gray-500 hover:text-gray-300 transition">Sair</a>
@@ -58,8 +57,7 @@
             </div>
             <div class="glass rounded-2xl p-6">
                 <p class="text-gray-400 text-sm mb-1">Cliques totais</p>
-                    <p class="text-3xl font-bold text-white">{{ total_clicks }}</p>
-                </p>
+                <p class="text-3xl font-bold text-white">{{ total_clicks }}</p>
                 <p class="text-xs text-gray-600 mt-1">em todos os links</p>
             </div>
             <div class="glass rounded-2xl p-6">
@@ -82,11 +80,14 @@
             </div>
 
             {% if blocks %}
-            <div class="flex flex-col gap-3">
+            <div class="flex flex-col gap-3" id="blocks-list">
                 {% for block in blocks %}
                 <div class="flex items-center justify-between p-4 rounded-xl border
-                            {% if block.is_active %}border-white/10 bg-white/5{% else %}border-white/5 bg-white/2 opacity-50{% endif %}
+                            {% if block.is_active %}border-white/10 bg-white/5{% else %}border-white/5 bg-white/2 opacity-50{% endif %}"
+                     data-id="{{ block.id }}">
                     <div class="flex items-center gap-3">
+                        <span class="text-gray-600 hover:text-gray-400 cursor-grab select-none px-1"
+                              data-handle>⠿</span>
                         <span class="text-lg">
                             {% if block.block_type == 'link' %}🔗
                             {% elif block.block_type == 'social' %}📱
@@ -108,7 +109,8 @@
                            class="text-xs px-3 py-1 rounded-lg border border-violet-500/30 text-violet-400 hover:bg-violet-500/10 transition">
                             Editar
                         </a>
-                        <form method="post" action="{% url 'block_delete' block.id %}" onsubmit="return confirm('Remover bloco?')">
+                        <form method="post" action="{% url 'block_delete' block.id %}"
+                              onsubmit="return confirm('Remover bloco?')">
                             {% csrf_token %}
                             <button type="submit"
                                     class="text-xs px-3 py-1 rounded-lg border border-red-500/30 text-red-400 hover:bg-red-500/10 transition">
@@ -133,4 +135,29 @@
 
     </main>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+<script>
+const list = document.getElementById('blocks-list');
+if (list) {
+    Sortable.create(list, {
+        animation: 150,
+        ghostClass: 'opacity-30',
+        handle: '[data-handle]',
+        onEnd: function () {
+            const order = [...list.querySelectorAll('[data-id]')]
+                .map(el => el.dataset.id);
+
+            fetch("{% url 'block_reorder' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}',
+                },
+                body: JSON.stringify({ order }),
+            });
+        }
+    });
+}
+</script>
 {% endblock %}

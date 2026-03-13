@@ -2,7 +2,9 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from apps.pages.models import Page, Block
-
+import json
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
 
 @login_required
 def dashboard(request):
@@ -85,3 +87,16 @@ def block_toggle(request, block_id):
     block.is_active = not block.is_active
     block.save(update_fields=['is_active'])
     return redirect('dashboard')
+
+@login_required
+@require_POST
+def block_reorder(request):
+    page = get_object_or_404(Page, user=request.user)
+    try:
+        data = json.loads(request.body)
+        order = data.get('order', [])  # lista de IDs na nova ordem
+        for index, block_id in enumerate(order):
+            page.blocks.filter(id=block_id).update(order=index)
+        return JsonResponse({'status': 'ok'})
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
