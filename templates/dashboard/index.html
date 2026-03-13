@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard — LumeBio{% endblock %}
+
+{% block content %}
+<div class="min-h-screen" style="background: radial-gradient(ellipse at 50% 0%, rgba(124,58,237,0.12) 0%, transparent 60%), #0a0a14;">
+
+    <!-- Navbar -->
+    <nav class="border-b border-white/5 px-6 py-4">
+        <div class="max-w-6xl mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-lg bg-linear-to-br from-violet-500 to-blue-500 flex items-center justify-center">
+                    <span class="text-white font-bold text-sm">L</span>
+                </div>
+                <span class="font-bold text-white">LumeBio</span>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <a href="/{{ profile.slug }}/"
+                   class="text-sm text-gray-400 hover:text-white transition flex items-center gap-1">
+                    <span>🔗</span> lumebio.com/{{ profile.slug }}
+                </a>
+                <a href="{% url 'account_logout' %}"
+                   class="text-sm text-gray-500 hover:text-gray-300 transition">
+                    Sair
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main -->
+    <main class="max-w-6xl mx-auto px-6 py-10">
+
+        <!-- Header -->
+        <div class="mb-10">
+            <h1 class="text-3xl font-bold text-white mb-1">
+                Olá, {{ user.email|truncatechars:25 }} 👋
+            </h1>
+            <p class="text-gray-400">Gerencie sua página bio e acompanhe seu crescimento.</p>
+        </div>
+
+        <!-- Stats -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
+            {% for stat in stats %}
+            <div class="glass rounded-2xl p-6">
+                <p class="text-gray-400 text-sm mb-1">{{ stat.label }}</p>
+                <p class="text-3xl font-bold text-white">{{ stat.value }}</p>
+                <p class="text-xs text-gray-600 mt-1">{{ stat.sub }}</p>
+            </div>
+            {% empty %}
+            <div class="glass rounded-2xl p-6">
+                <p class="text-gray-400 text-sm mb-1">Links ativos</p>
+                <p class="text-3xl font-bold text-white">0</p>
+                <p class="text-xs text-gray-600 mt-1">Adicione seu primeiro link</p>
+            </div>
+            <div class="glass rounded-2xl p-6">
+                <p class="text-gray-400 text-sm mb-1">Visualizações</p>
+                <p class="text-3xl font-bold text-white">0</p>
+                <p class="text-xs text-gray-600 mt-1">Últimos 30 dias</p>
+            </div>
+            <div class="glass rounded-2xl p-6">
+                <p class="text-gray-400 text-sm mb-1">Cliques totais</p>
+                <p class="text-3xl font-bold text-white">0</p>
+                <p class="text-xs text-gray-600 mt-1">Em todos os links</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Quick actions -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <!-- Editar página -->
+            <div class="glass rounded-2xl p-6">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-10 h-10 rounded-xl bg-violet-500/10 flex items-center justify-center">
+                        <span class="text-xl">✏️</span>
+                    </div>
+                    <div>
+                        <h2 class="font-semibold text-white">Sua página bio</h2>
+                        <p class="text-xs text-gray-500">Personalize links e aparência</p>
+                    </div>
+                </div>
+                <a href="#"
+                   class="block w-full py-2.5 text-center rounded-xl bg-violet-600/20 border border-violet-500/20
+                          text-violet-300 text-sm font-medium hover:bg-violet-600/30 transition">
+                    Editar página →
+                </a>
+            </div>
+
+            <!-- Preview -->
+            <div class="glass rounded-2xl p-6">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
+                        <span class="text-xl">👁️</span>
+                    </div>
+                    <div>
+                        <h2 class="font-semibold text-white">Visualizar página</h2>
+                        <p class="text-xs text-gray-500">Veja como seus visitantes veem</p>
+                    </div>
+                </div>
+                <a href="#"
+                   class="block w-full py-2.5 text-center rounded-xl bg-blue-600/20 border border-blue-500/20
+                          text-blue-300 text-sm font-medium hover:bg-blue-600/30 transition">
+                    Abrir preview →
+                </a>
+            </div>
+
+        </div>
+
+    </main>
+</div>
+{% endblock %}

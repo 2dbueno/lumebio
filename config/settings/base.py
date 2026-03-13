@@ -36,6 +36,7 @@ LOCAL_APPS = [
     'apps.themes.apps.ThemesConfig',
     'apps.billing.apps.BillingConfig',
     'apps.notifications.apps.NotificationsConfig',
+    'apps.dashboard',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
