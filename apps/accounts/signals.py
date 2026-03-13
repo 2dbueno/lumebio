@@ -4,6 +4,12 @@ from django.utils.text import slugify
 
 from .models import CustomUser, Profile
 
+RESERVED_SLUGS = [
+    'admin', 'dashboard', 'api', 'login', 'logout', 'register',
+    'signup', 'settings', 'profile', 'static', 'media', 'accounts',
+    'billing', 'support', 'help', 'about', 'terms', 'privacy',
+]
+
 
 @receiver(post_save, sender=CustomUser)
 def create_user_profile(sender, instance, created, **kwargs):
@@ -12,7 +18,7 @@ def create_user_profile(sender, instance, created, **kwargs):
         slug = base_slug
         counter = 1
 
-        while Profile.objects.filter(slug=slug).exists():
+        while Profile.objects.filter(slug=slug).exists() or slug in RESERVED_SLUGS:
             slug = f'{base_slug}{counter}'
             counter += 1
 
