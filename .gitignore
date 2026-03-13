@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+*.egg-info/
+
+# Django
+*.sqlite3
+/media/
+staticfiles/
+static/css/output.css
+
+# Ambiente
+.env
+.env.local
+.env.staging
+.env.production
+
+# Node
+node_modules/
+
+# VS Code
+.vscode/
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Docker
+docker/postgres_data/
