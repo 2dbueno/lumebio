@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Editar Página — LumeBio{% endblock %}
+
+{% block content %}
+<div class="min-h-screen" style="background: radial-gradient(ellipse at 50% 0%, rgba(124,58,237,0.12) 0%, transparent 60%), #0a0a14;">
+
+    <nav class="border-b border-white/5 px-6 py-4">
+        <div class="max-w-2xl mx-auto flex items-center justify-between">
+            <a href="{% url 'dashboard' %}" class="text-gray-400 hover:text-white transition text-sm">
+                ← Voltar ao dashboard
+            </a>
+            <span class="font-bold text-white">Editar Página</span>
+        </div>
+    </nav>
+
+    <main class="max-w-2xl mx-auto px-6 py-10">
+        <form method="post" class="flex flex-col gap-6">
+            {% csrf_token %}
+
+            <!-- Título -->
+            <div class="glass rounded-2xl p-6 flex flex-col gap-4">
+                <h2 class="text-white font-semibold">Informações</h2>
+
+                <div>
+                    <label class="text-sm text-gray-400 mb-1 block">Título da página</label>
+                    <input type="text" name="title" value="{{ page.title }}"
+                           class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5
+                                  text-white text-sm focus:outline-none focus:border-violet-500 transition">
+                </div>
+
+                <div>
+                    <label class="text-sm text-gray-400 mb-1 block">Bio</label>
+                    <textarea name="bio" rows="3"
+                              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5
+                                     text-white text-sm focus:outline-none focus:border-violet-500 transition resize-none">{{ page.bio }}</textarea>
+                </div>
+            </div>
+
+            <!-- Aparência -->
+            <div class="glass rounded-2xl p-6 flex flex-col gap-4">
+                <h2 class="text-white font-semibold">Aparência</h2>
+
+                <div>
+                    <label class="text-sm text-gray-400 mb-1 block">Tema</label>
+                    <select name="theme"
+                            class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5
+                                   text-white text-sm focus:outline-none focus:border-violet-500 transition">
+                        {% for value, label in page.THEME_CHOICES %}
+                        <option value="{{ value }}" {% if page.theme == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-sm text-gray-400 mb-1 block">Cor de fundo</label>
+                        <div class="flex items-center gap-2">
+                            <input type="color" name="bg_color" value="{{ page.bg_color }}"
+                                   class="w-10 h-10 rounded-lg border border-white/10 bg-transparent cursor-pointer">
+                            <input type="text" value="{{ page.bg_color }}"
+                                   class="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2
+                                          text-white text-sm focus:outline-none focus:border-violet-500 transition"
+                                   oninput="this.previousElementSibling.value=this.value">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="text-sm text-gray-400 mb-1 block">Cor de destaque</label>
+                        <div class="flex items-center gap-2">
+                            <input type="color" name="accent_color" value="{{ page.accent_color }}"
+                                   class="w-10 h-10 rounded-lg border border-white/10 bg-transparent cursor-pointer">
+                            <input type="text" value="{{ page.accent_color }}"
+                                   class="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2
+                                          text-white text-sm focus:outline-none focus:border-violet-500 transition"
+                                   oninput="this.previousElementSibling.value=this.value">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Visibilidade -->
+            <div class="glass rounded-2xl p-6 flex items-center justify-between">
+                <div>
+                    <p class="text-white font-semibold">Página pública</p>
+                    <p class="text-gray-500 text-xs mt-0.5">Sua página ficará visível para todos</p>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" name="is_published" class="sr-only peer"
+                           {% if page.is_published %}checked{% endif %}>
+                    <div class="w-11 h-6 bg-white/10 peer-checked:bg-violet-600 rounded-full
+                                transition peer-focus:outline-none
+                                after:content-[''] after:absolute after:top-[2px] after:left-[2px]
+                                after:bg-white after:rounded-full after:h-5 after:w-5
+                                after:transition-all peer-checked:after:translate-x-5"></div>
+                </label>
+            </div>
+
+            <button type="submit"
+                    class="w-full py-3 rounded-xl bg-violet-600 text-white font-semibold
+                           hover:bg-violet-700 transition">
+                Salvar alterações
+            </button>
+        </form>
+    </main>
+</div>
+{% endblock %}

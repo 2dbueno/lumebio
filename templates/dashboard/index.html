@@ -15,16 +15,13 @@
                 </div>
                 <span class="font-bold text-white">LumeBio</span>
             </div>
-
             <div class="flex items-center gap-4">
-                <a href="/{{ profile.slug }}/"
+                <a href="/{{ profile.slug }}/" target="_blank"
                    class="text-sm text-gray-400 hover:text-white transition flex items-center gap-1">
                     <span>🔗</span> lumebio.com/{{ profile.slug }}
                 </a>
                 <a href="{% url 'account_logout' %}"
-                   class="text-sm text-gray-500 hover:text-gray-300 transition">
-                    Sair
-                </a>
+                   class="text-sm text-gray-500 hover:text-gray-300 transition">Sair</a>
             </div>
         </div>
     </nav>
@@ -33,79 +30,100 @@
     <main class="max-w-6xl mx-auto px-6 py-10">
 
         <!-- Header -->
-        <div class="mb-10">
-            <h1 class="text-3xl font-bold text-white mb-1">
-                Olá, {{ user.email|truncatechars:25 }} 👋
-            </h1>
-            <p class="text-gray-400">Gerencie sua página bio e acompanhe seu crescimento.</p>
+        <div class="mb-10 flex items-center justify-between">
+            <div>
+                <h1 class="text-3xl font-bold text-white mb-1">
+                    Olá, {{ profile.display_name|default:user.email|truncatechars:25 }} 👋
+                </h1>
+                <p class="text-gray-400">Gerencie sua página bio e acompanhe seu crescimento.</p>
+            </div>
+            <a href="{% url 'page_edit' %}"
+               class="px-4 py-2 rounded-xl bg-violet-600/20 border border-violet-500/20
+                      text-violet-300 text-sm font-medium hover:bg-violet-600/30 transition">
+                ⚙️ Editar página
+            </a>
         </div>
 
         <!-- Stats -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
-            {% for stat in stats %}
-            <div class="glass rounded-2xl p-6">
-                <p class="text-gray-400 text-sm mb-1">{{ stat.label }}</p>
-                <p class="text-3xl font-bold text-white">{{ stat.value }}</p>
-                <p class="text-xs text-gray-600 mt-1">{{ stat.sub }}</p>
-            </div>
-            {% empty %}
             <div class="glass rounded-2xl p-6">
                 <p class="text-gray-400 text-sm mb-1">Links ativos</p>
-                <p class="text-3xl font-bold text-white">0</p>
-                <p class="text-xs text-gray-600 mt-1">Adicione seu primeiro link</p>
-            </div>
-            <div class="glass rounded-2xl p-6">
-                <p class="text-gray-400 text-sm mb-1">Visualizações</p>
-                <p class="text-3xl font-bold text-white">0</p>
-                <p class="text-xs text-gray-600 mt-1">Últimos 30 dias</p>
+                <p class="text-3xl font-bold text-white">{{ blocks|length }}</p>
+                <p class="text-xs text-gray-600 mt-1">blocos na sua página</p>
             </div>
             <div class="glass rounded-2xl p-6">
                 <p class="text-gray-400 text-sm mb-1">Cliques totais</p>
-                <p class="text-3xl font-bold text-white">0</p>
-                <p class="text-xs text-gray-600 mt-1">Em todos os links</p>
+                    <p class="text-3xl font-bold text-white">{{ total_clicks }}</p>
+                </p>
+                <p class="text-xs text-gray-600 mt-1">em todos os links</p>
             </div>
-            {% endfor %}
+            <div class="glass rounded-2xl p-6">
+                <p class="text-gray-400 text-sm mb-1">Status</p>
+                <p class="text-3xl font-bold {% if page.is_published %}text-green-400{% else %}text-red-400{% endif %}">
+                    {% if page.is_published %}Público{% else %}Oculto{% endif %}
+                </p>
+                <p class="text-xs text-gray-600 mt-1">visibilidade da página</p>
+            </div>
         </div>
 
-        <!-- Quick actions -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-            <!-- Editar página -->
-            <div class="glass rounded-2xl p-6">
-                <div class="flex items-center gap-3 mb-4">
-                    <div class="w-10 h-10 rounded-xl bg-violet-500/10 flex items-center justify-center">
-                        <span class="text-xl">✏️</span>
-                    </div>
-                    <div>
-                        <h2 class="font-semibold text-white">Sua página bio</h2>
-                        <p class="text-xs text-gray-500">Personalize links e aparência</p>
-                    </div>
-                </div>
-                <a href="#"
-                   class="block w-full py-2.5 text-center rounded-xl bg-violet-600/20 border border-violet-500/20
-                          text-violet-300 text-sm font-medium hover:bg-violet-600/30 transition">
-                    Editar página →
+        <!-- Blocos -->
+        <div class="glass rounded-2xl p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-lg font-semibold text-white">Seus blocos</h2>
+                <a href="{% url 'block_create' %}"
+                   class="px-4 py-2 rounded-xl bg-violet-600 text-white text-sm font-medium hover:bg-violet-700 transition">
+                    + Novo bloco
                 </a>
             </div>
 
-            <!-- Preview -->
-            <div class="glass rounded-2xl p-6">
-                <div class="flex items-center gap-3 mb-4">
-                    <div class="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
-                        <span class="text-xl">👁️</span>
+            {% if blocks %}
+            <div class="flex flex-col gap-3">
+                {% for block in blocks %}
+                <div class="flex items-center justify-between p-4 rounded-xl border
+                            {% if block.is_active %}border-white/10 bg-white/5{% else %}border-white/5 bg-white/[0.02] opacity-50{% endif %}">
+                    <div class="flex items-center gap-3">
+                        <span class="text-lg">
+                            {% if block.block_type == 'link' %}🔗
+                            {% elif block.block_type == 'social' %}📱
+                            {% elif block.block_type == 'header' %}📌
+                            {% elif block.block_type == 'divider' %}➖
+                            {% else %}📝{% endif %}
+                        </span>
+                        <div>
+                            <p class="text-white text-sm font-medium">{{ block.title|default:"Sem título" }}</p>
+                            <p class="text-gray-500 text-xs">{{ block.get_block_type_display }} · {{ block.clicks }} cliques</p>
+                        </div>
                     </div>
-                    <div>
-                        <h2 class="font-semibold text-white">Visualizar página</h2>
-                        <p class="text-xs text-gray-500">Veja como seus visitantes veem</p>
+                    <div class="flex items-center gap-2">
+                        <a href="{% url 'block_toggle' block.id %}"
+                           class="text-xs px-3 py-1 rounded-lg border border-white/10 text-gray-400 hover:text-white transition">
+                            {% if block.is_active %}Ocultar{% else %}Ativar{% endif %}
+                        </a>
+                        <a href="{% url 'block_edit' block.id %}"
+                           class="text-xs px-3 py-1 rounded-lg border border-violet-500/30 text-violet-400 hover:bg-violet-500/10 transition">
+                            Editar
+                        </a>
+                        <form method="post" action="{% url 'block_delete' block.id %}" onsubmit="return confirm('Remover bloco?')">
+                            {% csrf_token %}
+                            <button type="submit"
+                                    class="text-xs px-3 py-1 rounded-lg border border-red-500/30 text-red-400 hover:bg-red-500/10 transition">
+                                Remover
+                            </button>
+                        </form>
                     </div>
                 </div>
-                <a href="#"
-                   class="block w-full py-2.5 text-center rounded-xl bg-blue-600/20 border border-blue-500/20
-                          text-blue-300 text-sm font-medium hover:bg-blue-600/30 transition">
-                    Abrir preview →
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-12">
+                <p class="text-4xl mb-3">🧱</p>
+                <p class="text-gray-400 mb-4">Nenhum bloco ainda. Crie seu primeiro link!</p>
+                <a href="{% url 'block_create' %}"
+                   class="px-6 py-2.5 rounded-xl bg-violet-600 text-white text-sm font-medium hover:bg-violet-700 transition">
+                    + Criar bloco
                 </a>
             </div>
-
+            {% endif %}
         </div>
 
     </main>

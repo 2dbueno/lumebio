@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ action }} Bloco — LumeBio{% endblock %}
+
+{% block content %}
+<div class="min-h-screen" style="background: radial-gradient(ellipse at 50% 0%, rgba(124,58,237,0.12) 0%, transparent 60%), #0a0a14;">
+
+    <nav class="border-b border-white/5 px-6 py-4">
+        <div class="max-w-2xl mx-auto flex items-center justify-between">
+            <a href="{% url 'dashboard' %}" class="text-gray-400 hover:text-white transition text-sm">
+                ← Voltar ao dashboard
+            </a>
+            <span class="font-bold text-white">{{ action }} Bloco</span>
+        </div>
+    </nav>
+
+    <main class="max-w-2xl mx-auto px-6 py-10">
+        <form method="post" class="glass rounded-2xl p-6 flex flex-col gap-4">
+            {% csrf_token %}
+
+            <div>
+                <label class="text-sm text-gray-400 mb-1 block">Tipo</label>
+                <select name="block_type" x-data x-model="type"
+                        class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5
+                               text-white text-sm focus:outline-none focus:border-violet-500 transition">
+                    <option value="link"    {% if block.block_type == 'link' %}selected{% endif %}>🔗 Link</option>
+                    <option value="social"  {% if block.block_type == 'social' %}selected{% endif %}>📱 Rede Social</option>
+                    <option value="header"  {% if block.block_type == 'header' %}selected{% endif %}>📌 Cabeçalho</option>
+                    <option value="divider" {% if block.block_type == 'divider' %}selected{% endif %}>➖ Divisor</option>
+                    <option value="text"    {% if block.block_type == 'text' %}selected{% endif %}>📝 Texto</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="text-sm text-gray-400 mb-1 block">Título</label>
+                <input type="text" name="title" value="{{ block.title }}"
+                       placeholder="Ex: Meu Instagram"
+                       class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5
+                              text-white text-sm focus:outline-none focus:border-violet-500 transition">
+            </div>
+
+            <div>
+                <label class="text-sm text-gray-400 mb-1 block">URL</label>
+                <input type="url" name="url" value="{{ block.url }}"
+                       placeholder="https://..."
+                       class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5
+                              text-white text-sm focus:outline-none focus:border-violet-500 transition">
+            </div>
+
+            <div>
+                <label class="text-sm text-gray-400 mb-1 block">Descrição <span class="text-gray-600">(opcional)</span></label>
+                <input type="text" name="description" value="{{ block.description }}"
+                       placeholder="Texto curto abaixo do título"
+                       class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5
+                              text-white text-sm focus:outline-none focus:border-violet-500 transition">
+            </div>
+
+            <div>
+                <label class="text-sm text-gray-400 mb-1 block">Ícone <span class="text-gray-600">(emoji ou texto)</span></label>
+                <input type="text" name="icon" value="{{ block.icon }}"
+                       placeholder="🚀"
+                       class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5
+                              text-white text-sm focus:outline-none focus:border-violet-500 transition">
+            </div>
+
+            {% if block %}
+            <div class="flex items-center justify-between py-2">
+                <div>
+                    <p class="text-white text-sm font-medium">Bloco ativo</p>
+                    <p class="text-gray-500 text-xs">Visível na sua página pública</p>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" name="is_active" class="sr-only peer"
+                           {% if block.is_active %}checked{% endif %}>
+                    <div class="w-11 h-6 bg-white/10 peer-checked:bg-violet-600 rounded-full
+                                transition after:content-[''] after:absolute after:top-[2px] after:left-[2px]
+                                after:bg-white after:rounded-full after:h-5 after:w-5
+                                after:transition-all peer-checked:after:translate-x-5"></div>
+                </label>
+            </div>
+            {% endif %}
+
+            <button type="submit"
+                    class="w-full py-3 rounded-xl bg-violet-600 text-white font-semibold
+                           hover:bg-violet-700 transition">
+                {{ action }} bloco
+            </button>
+        </form>
+    </main>
+</div>
+{% endblock %}
