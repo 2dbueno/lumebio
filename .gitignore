@@ -16,7 +16,9 @@ static/css/output.css
 .env.local
 .env.staging
 .env.production
-
+*.ctl
+*.pid
+*.sock
 # Node
 node_modules/
 
