@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Analytics — LumeBio{% endblock %}
+
+{% block content %}
+<div class="min-h-screen" style="background: radial-gradient(ellipse at 50% 0%, rgba(124,58,237,0.12) 0%, transparent 60%), #0a0a14;">
+
+    <!-- Navbar -->
+    <nav class="border-b border-white/5 px-6 py-4">
+        <div class="max-w-6xl mx-auto flex items-center justify-between">
+            <a href="{% url 'dashboard' %}" class="text-gray-400 hover:text-white transition text-sm">
+                ← Voltar ao dashboard
+            </a>
+            <span class="font-bold text-white">Analytics</span>
+            <a href="/{{ profile.slug }}/" target="_blank"
+               class="text-sm text-gray-400 hover:text-white transition">
+                🔗 {{ profile.slug }}
+            </a>
+        </div>
+    </nav>
+
+    <main class="max-w-6xl mx-auto px-6 py-10">
+
+        <!-- Stats gerais -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
+            <div class="glass rounded-2xl p-6">
+                <p class="text-gray-400 text-sm mb-1">Cliques totais</p>
+                <p class="text-3xl font-bold text-white">{{ total_clicks }}</p>
+                <p class="text-xs text-gray-600 mt-1">em todos os links</p>
+            </div>
+            <div class="glass rounded-2xl p-6">
+                <p class="text-gray-400 text-sm mb-1">Links ativos</p>
+                <p class="text-3xl font-bold text-white">{{ active_blocks }}</p>
+                <p class="text-xs text-gray-600 mt-1">blocos visíveis</p>
+            </div>
+            <div class="glass rounded-2xl p-6">
+                <p class="text-gray-400 text-sm mb-1">Últimos 30 dias</p>
+                <p class="text-3xl font-bold text-white">{{ clicks_last_30 }}</p>
+                <p class="text-xs text-gray-600 mt-1">cliques recentes</p>
+            </div>
+        </div>
+
+        <!-- Cliques por dia -->
+        <div class="glass rounded-2xl p-6 mb-6">
+            <h2 class="text-white font-semibold mb-6">Cliques por dia — últimos 30 dias</h2>
+            {% if clicks_by_day %}
+            <div class="flex items-end gap-1 h-32">
+                {% with max_val=1 %}
+                {% for day in clicks_by_day %}
+                <div class="flex-1 flex flex-col items-center gap-1 group relative">
+                    <div class="absolute -top-6 left-1/2 -translate-x-1/2 bg-violet-600 text-white text-xs
+                                px-2 py-0.5 rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap">
+                        {{ day.total }}
+                    </div>
+                    <div class="w-full rounded-t-sm bg-violet-500/60 hover:bg-violet-500 transition"
+                         style="height: {{ day.total }}00%"></div>
+                </div>
+                {% endfor %}
+                {% endwith %}
+            </div>
+            {% else %}
+            <div class="text-center py-8">
+                <p class="text-gray-500">Nenhum clique nos últimos 30 dias ainda.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Cliques por bloco -->
+        <div class="glass rounded-2xl p-6">
+            <h2 class="text-white font-semibold mb-6">Performance por bloco</h2>
+            {% if block_stats %}
+            <div class="flex flex-col gap-3">
+                {% for block in block_stats %}
+                <div class="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10">
+                    <div class="flex items-center gap-3 flex-1">
+                        <span>
+                            {% if block.block_type == 'link' %}🔗
+                            {% elif block.block_type == 'social' %}📱
+                            {% elif block.block_type == 'header' %}📌
+                            {% else %}📝{% endif %}
+                        </span>
+                        <p class="text-white text-sm">{{ block.title|default:"Sem título" }}</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <!-- Barra de progresso -->
+                        <div class="w-32 h-1.5 bg-white/10 rounded-full overflow-hidden">
+                            <div class="h-full bg-violet-500 rounded-full"
+                                 style="width: {% if total_clicks > 0 %}{% widthratio block.clicks total_clicks 100 %}%{% else %}0%{% endif %}">
+                            </div>
+                        </div>
+                        <span class="text-white text-sm font-bold w-8 text-right">{{ block.clicks }}</span>
+                        <span class="text-gray-500 text-xs w-12 text-right">
+                            {% if total_clicks > 0 %}
+                                {% widthratio block.clicks total_clicks 100 %}%
+                            {% else %}0%{% endif %}
+                        </span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-gray-500 text-center py-8">Nenhum bloco criado ainda.</p>
+            {% endif %}
+        </div>
+
+    </main>
+</div>
+{% endblock %}

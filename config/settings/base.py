@@ -31,6 +31,7 @@ THIRD_PARTY_APPS = [
 LOCAL_APPS = [
     'apps.accounts.apps.AccountsConfig',
     'apps.pages.apps.PagesConfig',
+    'apps.analytics.apps.AnalyticsConfig',
     'apps.dashboard',
 ]
 
