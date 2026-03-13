@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page.title }}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background-color: {{ page.bg_color }};
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding: 40px 16px;
+        }
+        .container { max-width: 480px; width: 100%; }
+        .profile { text-align: center; margin-bottom: 32px; }
+        .avatar {
+            width: 96px; height: 96px; border-radius: 50%;
+            object-fit: cover; border: 3px solid {{ page.accent_color }};
+            margin-bottom: 12px;
+        }
+        .avatar-placeholder {
+            width: 96px; height: 96px; border-radius: 50%;
+            background: {{ page.accent_color }}33;
+            border: 3px solid {{ page.accent_color }};
+            margin: 0 auto 12px;
+        }
+        h1 { color: #fff; font-size: 1.4rem; font-weight: 700; }
+        .bio { color: #aaa; font-size: 0.9rem; margin-top: 6px; }
+        .blocks { display: flex; flex-direction: column; gap: 12px; }
+        .block-link {
+            display: block; padding: 14px 20px;
+            background: #ffffff10; border: 1px solid #ffffff15;
+            border-radius: 12px; color: #fff;
+            text-decoration: none; font-size: 0.95rem;
+            text-align: center; transition: all 0.2s;
+        }
+        .block-link:hover {
+            background: {{ page.accent_color }}33;
+            border-color: {{ page.accent_color }};
+            transform: translateY(-2px);
+        }
+        .block-header {
+            color: #aaa; font-size: 0.8rem;
+            text-transform: uppercase; letter-spacing: 1px;
+            text-align: center; padding: 4px 0;
+        }
+        .block-divider { border: none; border-top: 1px solid #ffffff15; }
+        .block-text { color: #ccc; font-size: 0.9rem; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="profile">
+            {% if page.avatar %}
+                <img src="{{ page.avatar.url }}" class="avatar" alt="{{ page.title }}">
+            {% else %}
+                <div class="avatar-placeholder"></div>
+            {% endif %}
+            <h1>{{ profile.display_name|default:page.title }}</h1>
+            <p class="bio">{{ profile.bio|default:page.bio }}</p>
+        </div>
+
+        <div class="blocks">
+            {% for block in blocks %}
+                {% if block.block_type == 'link' or block.block_type == 'social' %}
+                    <a href="{% url 'pages:block_redirect' block.id %}" class="block-link" target="_blank">
+                        {% if block.icon %}{{ block.icon }} {% endif %}{{ block.title }}
+                    </a>
+                {% elif block.block_type == 'header' %}
+                    <p class="block-header">{{ block.title }}</p>
+                {% elif block.block_type == 'divider' %}
+                    <hr class="block-divider">
+                {% elif block.block_type == 'text' %}
+                    <p class="block-text">{{ block.description }}</p>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>
