@@ -1,109 +1,242 @@
-{% extends 'base.html' %}
-{% load static %}
-
-{% block title %}Analytics — LumeBio{% endblock %}
+{% extends "base.html" %}
+{% block title %}Analytics — {{ page.title }}{% endblock %}
 
 {% block content %}
-<div class="min-h-screen" style="background: radial-gradient(ellipse at 50% 0%, rgba(124,58,237,0.12) 0%, transparent 60%), #0a0a14;">
+<div class="max-w-5xl mx-auto px-4 py-10">
 
-    <!-- Navbar -->
-    <nav class="border-b border-white/5 px-6 py-4">
-        <div class="max-w-6xl mx-auto flex items-center justify-between">
-            <a href="{% url 'dashboard' %}" class="text-gray-400 hover:text-white transition text-sm">
-                ← Voltar ao dashboard
-            </a>
-            <span class="font-bold text-white">Analytics</span>
-            <a href="/{{ profile.slug }}/" target="_blank"
-               class="text-sm text-gray-400 hover:text-white transition">
-                🔗 {{ profile.slug }}
-            </a>
+  <!-- Cabeçalho -->
+  <div class="flex flex-wrap items-start justify-between gap-4 mb-8">
+    <div>
+      <h1 class="text-2xl font-bold text-white">Analytics</h1>
+      <p class="text-sm text-white/40 mt-1">Dados coletados com consentimento LGPD</p>
+    </div>
+
+    <!-- Filtro de período + Exportar -->
+    <div class="flex flex-wrap items-center gap-3">
+      <!-- Botões de período -->
+      <div class="flex rounded-xl overflow-hidden border border-white/10">
+        <a href="?period=7"
+          class="px-4 py-2 text-sm font-medium transition-colors
+                  {% if period == '7' %}bg-violet-600 text-white{% else %}text-white/50 hover:text-white hover:bg-white/5{% endif %}">
+          7 dias
+        </a>
+        <a href="?period=30"
+          class="px-4 py-2 text-sm font-medium transition-colors border-l border-white/10
+                  {% if period == '30' or not period %}bg-violet-600 text-white{% else %}text-white/50 hover:text-white hover:bg-white/5{% endif %}">
+          30 dias
+        </a>
+        <a href="?period=90"
+          class="px-4 py-2 text-sm font-medium transition-colors border-l border-white/10
+                  {% if period == '90' %}bg-violet-600 text-white{% else %}text-white/50 hover:text-white hover:bg-white/5{% endif %}">
+          90 dias
+        </a>
+      </div>
+
+      <!-- Exportar CSV -->
+      <a href="{% url 'analytics:export_csv' %}?period={{ period }}"
+         class="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10
+                text-sm text-white/70 hover:text-white hover:bg-white/10 transition-colors">
+        ↓ Exportar CSV
+      </a>
+    </div>
+  </div>
+
+  <!-- KPIs -->
+  <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
+    <div class="glass rounded-2xl p-5">
+      <p class="text-xs text-white/40 uppercase tracking-wider mb-1">Cliques hoje</p>
+      <p class="text-3xl font-bold text-white">{{ clicks_today }}</p>
+    </div>
+    <div class="glass rounded-2xl p-5">
+      <p class="text-xs text-white/40 uppercase tracking-wider mb-1">Cliques 7 dias</p>
+      <p class="text-3xl font-bold text-white">{{ clicks_7d }}</p>
+    </div>
+    <div class="glass rounded-2xl p-5">
+      <p class="text-xs text-white/40 uppercase tracking-wider mb-1">Cliques {{ days }}d</p>
+      <p class="text-3xl font-bold text-white">{{ clicks_period }}</p>
+    </div>
+    <div class="glass rounded-2xl p-5">
+      <p class="text-xs text-white/40 uppercase tracking-wider mb-1">Visualizações {{ days }}d</p>
+      <p class="text-3xl font-bold text-white">{{ views_period }}</p>
+    </div>
+    <div class="glass rounded-2xl p-5">
+      <p class="text-xs text-white/40 uppercase tracking-wider mb-1">Conversão</p>
+      <p class="text-3xl font-bold text-white">{{ conversion_rate }}%</p>
+    </div>
+  </div>
+
+  <!-- Gráfico de linha -->
+  <div class="glass rounded-2xl p-6 mb-6">
+    <h2 class="text-sm font-semibold text-white/60 uppercase tracking-wider mb-4">
+      Cliques e Visualizações — {{ days }} dias
+    </h2>
+    <canvas id="lineChart" height="100"></canvas>
+  </div>
+
+  <div class="grid md:grid-cols-2 gap-6 mb-6">
+
+    <!-- Dispositivos -->
+    <div class="glass rounded-2xl p-6">
+      <h2 class="text-sm font-semibold text-white/60 uppercase tracking-wider mb-4">Dispositivos</h2>
+      {% if device_data %}
+        <div style="max-height:220px; position:relative;">
+          <canvas id="deviceChart"></canvas>
         </div>
-    </nav>
+      {% else %}
+        <p class="text-white/30 text-sm text-center py-8">Sem dados ainda</p>
+      {% endif %}
+    </div>
 
-    <main class="max-w-6xl mx-auto px-6 py-10">
+    <!-- Top origens -->
+    <div class="glass rounded-2xl p-6">
+      <h2 class="text-sm font-semibold text-white/60 uppercase tracking-wider mb-4">Top Origens</h2>
+      {% if top_referers %}
+        <ul class="space-y-3">
+          {% for ref in top_referers %}
+          <li class="flex items-center justify-between">
+            <span class="text-sm text-white/70 truncate">{{ ref.referer_domain }}</span>
+            <span class="text-sm font-semibold text-violet-400 ml-4">{{ ref.total }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="text-white/30 text-sm text-center py-8">Sem dados ainda</p>
+      {% endif %}
+    </div>
 
-        <!-- Stats gerais -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
-            <div class="glass rounded-2xl p-6">
-                <p class="text-gray-400 text-sm mb-1">Cliques totais</p>
-                <p class="text-3xl font-bold text-white">{{ total_clicks }}</p>
-                <p class="text-xs text-gray-600 mt-1">em todos os links</p>
-            </div>
-            <div class="glass rounded-2xl p-6">
-                <p class="text-gray-400 text-sm mb-1">Links ativos</p>
-                <p class="text-3xl font-bold text-white">{{ active_blocks }}</p>
-                <p class="text-xs text-gray-600 mt-1">blocos visíveis</p>
-            </div>
-            <div class="glass rounded-2xl p-6">
-                <p class="text-gray-400 text-sm mb-1">Últimos 30 dias</p>
-                <p class="text-3xl font-bold text-white">{{ clicks_last_30 }}</p>
-                <p class="text-xs text-gray-600 mt-1">cliques recentes</p>
-            </div>
-        </div>
+  </div>
 
-        <!-- Cliques por dia -->
-        <div class="glass rounded-2xl p-6 mb-6">
-            <h2 class="text-white font-semibold mb-6">Cliques por dia — últimos 30 dias</h2>
-            {% if clicks_by_day %}
-            <div class="flex items-end gap-1 h-32">
-                {% with max_val=1 %}
-                {% for day in clicks_by_day %}
-                <div class="flex-1 flex flex-col items-center gap-1 group relative">
-                    <div class="absolute -top-6 left-1/2 -translate-x-1/2 bg-violet-600 text-white text-xs
-                                px-2 py-0.5 rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap">
-                        {{ day.total }}
-                    </div>
-                    <div class="w-full rounded-t-sm bg-violet-500/60 hover:bg-violet-500 transition"
-                         style="height: {{ day.total }}00%"></div>
-                </div>
-                {% endfor %}
-                {% endwith %}
-            </div>
-            {% else %}
-            <div class="text-center py-8">
-                <p class="text-gray-500">Nenhum clique nos últimos 30 dias ainda.</p>
-            </div>
-            {% endif %}
-        </div>
+  <!-- Ranking de links -->
+  <div class="glass rounded-2xl p-6 mb-6">
+    <h2 class="text-sm font-semibold text-white/60 uppercase tracking-wider mb-4">Ranking de Links</h2>
+    {% if block_stats %}
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="text-white/40 border-b border-white/10">
+            <th class="text-left pb-3 font-medium">Link</th>
+            <th class="text-left pb-3 font-medium">Destino</th>
+            <th class="text-right pb-3 font-medium">Cliques</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-white/5">
+          {% for b in block_stats %}
+          <tr class="hover:bg-white/5 transition-colors">
+            <td class="py-3 text-white font-medium">{{ b.title|default:"(sem título)" }}</td>
+            <td class="py-3 text-white/40 truncate max-w-xs">{{ b.url|default:"—" }}</td>
+            <td class="py-3 text-right">
+              <span class="inline-block bg-violet-600/20 text-violet-300 text-xs font-semibold px-2 py-1 rounded-full">
+                {{ b.clicks }}
+              </span>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+      <p class="text-white/30 text-sm text-center py-8">Nenhum link cadastrado ainda</p>
+    {% endif %}
+  </div>
 
-        <!-- Cliques por bloco -->
-        <div class="glass rounded-2xl p-6">
-            <h2 class="text-white font-semibold mb-6">Performance por bloco</h2>
-            {% if block_stats %}
-            <div class="flex flex-col gap-3">
-                {% for block in block_stats %}
-                <div class="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10">
-                    <div class="flex items-center gap-3 flex-1">
-                        <span>
-                            {% if block.block_type == 'link' %}🔗
-                            {% elif block.block_type == 'social' %}📱
-                            {% elif block.block_type == 'header' %}📌
-                            {% else %}📝{% endif %}
-                        </span>
-                        <p class="text-white text-sm">{{ block.title|default:"Sem título" }}</p>
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <!-- Barra de progresso -->
-                        <div class="w-32 h-1.5 bg-white/10 rounded-full overflow-hidden">
-                            <div class="h-full bg-violet-500 rounded-full"
-                                 style="width: {% if total_clicks > 0 %}{% widthratio block.clicks total_clicks 100 %}%{% else %}0%{% endif %}">
-                            </div>
-                        </div>
-                        <span class="text-white text-sm font-bold w-8 text-right">{{ block.clicks }}</span>
-                        <span class="text-gray-500 text-xs w-12 text-right">
-                            {% if total_clicks > 0 %}
-                                {% widthratio block.clicks total_clicks 100 %}%
-                            {% else %}0%{% endif %}
-                        </span>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-            {% else %}
-            <p class="text-gray-500 text-center py-8">Nenhum bloco criado ainda.</p>
-            {% endif %}
-        </div>
+  <!-- LGPD -->
+  <div class="glass rounded-2xl p-5 flex flex-wrap items-center justify-between gap-4">
+    <div>
+      <p class="text-sm text-white/60">Todos os dados são coletados com consentimento.</p>
+      <p class="text-xs text-white/30 mt-1">
+        Visitantes que recusaram o consentimento não são rastreados.
+        <a href="/privacy/" class="text-violet-400 hover:underline">Ver política de privacidade</a>
+      </p>
+    </div>
+    <a href="{% url 'accounts:data_export' %}"
+       class="text-xs text-white/40 hover:text-white/70 transition-colors">
+      Exportar meus dados (LGPD)
+    </a>
+  </div>
 
-    </main>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+  const labels     = {{ chart_labels|safe }};
+  const clicksData = {{ chart_clicks|safe }};
+  const viewsData  = {{ chart_views|safe }};
+  const devLabels  = {{ device_labels|safe }};
+  const devData    = {{ device_data|safe }};
+
+  const shortLabels = labels.map(d => {
+    const [y, m, day] = d.split('-');
+    return `${day}/${m}`;
+  });
+
+  // Gráfico de linha
+  new Chart(document.getElementById('lineChart'), {
+    type: 'line',
+    data: {
+      labels: shortLabels,
+      datasets: [
+        {
+          label: 'Cliques',
+          data: clicksData,
+          borderColor: '#7c3aed',
+          backgroundColor: 'rgba(124,58,237,0.1)',
+          tension: 0.4,
+          fill: true,
+          pointRadius: 3,
+        },
+        {
+          label: 'Visualizações',
+          data: viewsData,
+          borderColor: '#2563eb',
+          backgroundColor: 'rgba(37,99,235,0.08)',
+          tension: 0.4,
+          fill: true,
+          pointRadius: 3,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { labels: { color: 'rgba(255,255,255,0.6)', font: { size: 12 } } },
+      },
+      scales: {
+        x: {
+          ticks: { color: 'rgba(255,255,255,0.3)', maxTicksLimit: 10 },
+          grid: { color: 'rgba(255,255,255,0.05)' },
+        },
+        y: {
+          ticks: { color: 'rgba(255,255,255,0.3)' },
+          grid: { color: 'rgba(255,255,255,0.05)' },
+          beginAtZero: true,
+        },
+      },
+    },
+  });
+
+  // Gráfico de pizza
+  if (devData.length > 0) {
+    new Chart(document.getElementById('deviceChart'), {
+      type: 'doughnut',
+      data: {
+        labels: devLabels,
+        datasets: [{
+          data: devData,
+          backgroundColor: ['#7c3aed', '#2563eb', '#db2777'],
+          borderWidth: 0,
+        }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: { color: 'rgba(255,255,255,0.6)', padding: 16 },
+          },
+        },
+      },
+    });
+  }
+</script>
 {% endblock %}

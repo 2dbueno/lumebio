@@ -1,11 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ profile.display_name|default:page.title }}</title>
-
-    <!-- OG Meta Tags -->
     <meta property="og:title" content="{{ profile.display_name|default:page.title }}">
     <meta property="og:description" content="{{ profile.bio|default:page.bio }}">
     <meta property="og:type" content="profile">
@@ -15,7 +13,6 @@
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content="{{ profile.display_name|default:page.title }}">
     <meta name="twitter:description" content="{{ profile.bio|default:page.bio }}">
-
     {% with t=page.get_theme_vars %}
     <style>
         :root {
@@ -89,7 +86,6 @@
             <h1>{{ profile.display_name|default:page.title }}</h1>
             <p class="bio">{{ profile.bio|default:page.bio }}</p>
         </div>
-
         <div class="blocks">
             {% for block in blocks %}
                 {% if block.block_type == 'link' or block.block_type == 'social' %}
@@ -106,5 +102,79 @@
             {% endfor %}
         </div>
     </div>
+
+    <!-- Banner LGPD — só aparece se não houver consentimento registrado -->
+    <div id="lgpd-banner" style="display:none; position:fixed; bottom:0; left:0; right:0; z-index:9999; padding:16px;">
+        <div style="max-width:560px; margin:0 auto; background:rgba(20,20,35,0.97); border:1px solid rgba(255,255,255,0.1); border-radius:16px; padding:16px 20px; display:flex; flex-wrap:wrap; align-items:center; gap:12px; box-shadow:0 -4px 30px rgba(0,0,0,0.4);">
+            <p style="flex:1; min-width:200px; color:#aaa; font-size:0.85rem; margin:0; font-family:sans-serif;">
+                Usamos analytics próprio para ajudar criadores a entender seu público.
+                Nenhum dado é vendido a terceiros.
+                <a href="/privacy" style="color:#a78bfa; text-decoration:none;">Saiba mais</a>
+            </p>
+            <div style="display:flex; gap:8px;">
+                <button onclick="lgpdRefuse()" style="padding:8px 16px; font-size:0.85rem; color:#aaa; background:transparent; border:1px solid rgba(255,255,255,0.15); border-radius:10px; cursor:pointer;">
+                    Recusar
+                </button>
+                <button onclick="lgpdAccept()" style="padding:8px 16px; font-size:0.85rem; font-weight:600; color:#fff; background:#7c3aed; border:none; border-radius:10px; cursor:pointer;">
+                    Aceitar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ─── Helpers de cookie ────────────────────────────────────────────────────
+        function getCookie(name) {
+            const match = document.cookie
+                .split('; ')
+                .find(function(r) { return r.startsWith(name + '='); });
+            return match ? match.split('=')[1] : null;
+        }
+
+        function setCookie(name, value, days) {
+            var maxAge = days * 24 * 60 * 60;
+            document.cookie = name + '=' + value
+                + '; path=/; max-age=' + maxAge
+                + '; SameSite=Lax';
+        }
+
+        // ─── Inicialização ────────────────────────────────────────────────────────
+        // Regras:
+        //   - Se ambos existem → não faz nada, banner fica oculto
+        //   - Se só localStorage → ressincronia para o cookie (expirou ou foi limpo)
+        //   - Se só cookie → ressincronia para o localStorage (aba nova / modo privado)
+        //   - Se nenhum → exibe o banner
+        (function () {
+            var lsVal     = localStorage.getItem('biolink_consent');
+            var cookieVal = getCookie('biolink_consent');
+
+            if (lsVal && !cookieVal) {
+                // localStorage OK mas cookie sumiu (expirou, limpeza manual, etc.)
+                setCookie('biolink_consent', lsVal, 365);
+
+            } else if (!lsVal && cookieVal) {
+                // Cookie OK mas localStorage sumiu (modo privado, aba nova, etc.)
+                localStorage.setItem('biolink_consent', cookieVal);
+
+            } else if (!lsVal && !cookieVal) {
+                // Nenhum dos dois → primeira visita, mostrar banner
+                document.getElementById('lgpd-banner').style.display = 'block';
+            }
+            // Se ambos existem: não faz nada, banner permanece oculto
+        })();
+
+        // ─── Ações dos botões ─────────────────────────────────────────────────────
+        function lgpdAccept() {
+            localStorage.setItem('biolink_consent', 'accepted');
+            setCookie('biolink_consent', 'accepted', 365);
+            document.getElementById('lgpd-banner').style.display = 'none';
+        }
+
+        function lgpdRefuse() {
+            localStorage.setItem('biolink_consent', 'refused');
+            setCookie('biolink_consent', 'refused', 365);
+            document.getElementById('lgpd-banner').style.display = 'none';
+        }
+    </script>
 </body>
 </html>

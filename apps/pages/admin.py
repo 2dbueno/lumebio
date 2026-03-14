@@ -21,4 +21,8 @@ class BlockAdmin(admin.ModelAdmin):
 
 @admin.register(LinkClick)
 class LinkClickAdmin(admin.ModelAdmin):
-    list_display = ['block', 'clicked_at', 'ip_address']
+    list_display = ['block', 'clicked_at', 'ip_address', 'referer']
+    list_filter = ['clicked_at', 'block__page']
+    search_fields = ['ip_address', 'block__title']
+    ordering = ['-clicked_at']
+    readonly_fields = ['block', 'clicked_at', 'ip_address', 'user_agent', 'referer']

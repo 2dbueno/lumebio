@@ -97,7 +97,8 @@ class LinkClick(models.Model):
     clicked_at = models.DateTimeField(auto_now_add=True)
     ip_address = models.GenericIPAddressField(null=True, blank=True)
     user_agent = models.TextField(blank=True)
-    referer = models.URLField(blank=True)
+    # TextField em vez de URLField — referer do browser nem sempre é URL válida
+    referer = models.TextField(blank=True)
 
     class Meta:
         verbose_name = 'Clique'

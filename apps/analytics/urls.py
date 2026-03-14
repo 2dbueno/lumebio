@@ -5,4 +5,5 @@ app_name = 'analytics'
 
 urlpatterns = [
     path('', views.analytics, name='index'),
+    path('export/csv/', views.export_csv, name='export_csv'),
 ]

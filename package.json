@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/2dbueno/lumebio#readme",
   "dependencies": {
+    "@tailwindcss/cli": "^4.2.1",
     "tailwindcss": "^4.2.1"
   }
 }

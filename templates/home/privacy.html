@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}Política de Privacidade — LumeBio{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 py-16">
+
+  <div class="mb-10">
+    <h1 class="text-3xl font-bold text-white mb-2">Política de Privacidade</h1>
+    <p class="text-sm text-white/40">Última atualização: Março de 2026 · Em conformidade com a LGPD (Lei 13.709/2018)</p>
+  </div>
+
+  <div class="space-y-8 text-white/70 text-sm leading-relaxed">
+
+    <section class="glass rounded-2xl p-6">
+      <h2 class="text-base font-semibold text-white mb-3">1. Quem somos</h2>
+      <p>
+        LumeBio é uma plataforma de "link in bio" desenvolvida no Brasil.
+        Somos responsáveis pelo tratamento dos dados pessoais coletados por meio desta plataforma.
+      </p>
+    </section>
+
+    <section class="glass rounded-2xl p-6">
+      <h2 class="text-base font-semibold text-white mb-3">2. Quais dados coletamos</h2>
+      <div class="space-y-3">
+        <div>
+          <p class="font-medium text-white/90">Dados de conta (criadores):</p>
+          <p>Endereço de e-mail, nome de exibição, bio, foto de perfil.</p>
+        </div>
+        <div>
+          <p class="font-medium text-white/90">Analytics de visitantes (somente com consentimento):</p>
+          <ul class="list-disc list-inside space-y-1 mt-1">
+            <li>IP anonimizado (último octeto removido — ex: 192.168.1.0)</li>
+            <li>Tipo de dispositivo (mobile, tablet ou desktop)</li>
+            <li>Domínio de origem da visita (ex: instagram.com)</li>
+            <li>Links clicados e horário do clique</li>
+          </ul>
+        </div>
+        <div>
+          <p class="font-medium text-white/90">O que NÃO coletamos:</p>
+          <p>IP completo, localização exata, histórico de navegação, dados financeiros ou qualquer dado sensível.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="glass rounded-2xl p-6">
+      <h2 class="text-base font-semibold text-white mb-3">3. Para que usamos</h2>
+      <ul class="list-disc list-inside space-y-2">
+        <li>Fornecer analytics para os criadores entenderem seu público</li>
+        <li>Melhorar a plataforma</li>
+        <li>Enviar comunicações relacionadas à conta (com consentimento)</li>
+      </ul>
+      <p class="mt-3 font-medium text-white/90">Nenhum dado é vendido a terceiros. Nunca.</p>
+    </section>
+
+    <section class="glass rounded-2xl p-6">
+      <h2 class="text-base font-semibold text-white mb-3">4. Consentimento dos visitantes</h2>
+      <p>
+        Os visitantes das páginas bio são informados sobre a coleta de analytics por meio de um
+        banner de consentimento exibido na primeira visita. Apenas visitantes que clicam em
+        <strong class="text-white">"Aceitar"</strong> têm seus dados de navegação coletados.
+        Visitantes que clicam em <strong class="text-white">"Recusar"</strong> não geram nenhum
+        registro em nosso banco de dados.
+      </p>
+    </section>
+
+    <section class="glass rounded-2xl p-6">
+      <h2 class="text-base font-semibold text-white mb-3">5. Prazo de retenção</h2>
+      <p>
+        Dados de analytics (visualizações e cliques individuais) são armazenados por no máximo
+        <strong class="text-white">12 meses</strong>, após o que são automaticamente removidos.
+        Dados agregados (totais por dia) podem ser mantidos por tempo indeterminado para fins
+        de histórico do criador.
+      </p>
+    </section>
+
+    <section class="glass rounded-2xl p-6">
+      <h2 class="text-base font-semibold text-white mb-3">6. Seus direitos (LGPD)</h2>
+      <p class="mb-3">Como titular de dados, você tem direito a:</p>
+      <ul class="list-disc list-inside space-y-2">
+        <li>
+          <strong class="text-white">Acesso e portabilidade:</strong>
+          <a href="/settings/data/export/" class="text-violet-400 hover:underline">
+            Exportar todos os seus dados
+          </a>
+        </li>
+        <li>
+          <strong class="text-white">Exclusão:</strong>
+          <a href="/settings/data/delete/" class="text-violet-400 hover:underline">
+            Deletar sua conta e todos os dados
+          </a>
+        </li>
+        <li><strong class="text-white">Revogação do consentimento:</strong> Limpe os cookies e localStorage do navegador na página bio de qualquer criador</li>
+        <li><strong class="text-white">Informação:</strong> Esta página</li>
+      </ul>
+    </section>
+
+    <section class="glass rounded-2xl p-6">
+      <h2 class="text-base font-semibold text-white mb-3">7. Contato</h2>
+      <p>
+        Para exercer seus direitos ou tirar dúvidas sobre privacidade, entre em contato:
+        <a href="mailto:privacidade@lumebio.app" class="text-violet-400 hover:underline">
+          privacidade@lumebio.app
+        </a>
+      </p>
+    </section>
+
+  </div>
+
+</div>
+{% endblock %}
