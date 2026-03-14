@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}Assinatura — LumeBio{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 py-10">
+
+  <div class="mb-8">
+    <h1 class="text-2xl font-bold text-white">Minha Assinatura</h1>
+  </div>
+
+  <!-- Status da assinatura -->
+  <div class="glass rounded-2xl p-6 mb-6">
+    {% if subscription and subscription.is_active %}
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <div class="flex items-center gap-2 mb-1">
+            <span class="w-2 h-2 rounded-full bg-green-400 inline-block"></span>
+            <p class="text-sm text-green-400 font-medium">Assinatura ativa</p>
+          </div>
+          <p class="text-xl font-bold text-white">Plano {{ subscription.plan.name }}</p>
+          <p class="text-sm text-white/40 mt-1">
+            Próxima cobrança: {{ subscription.current_period_end|date:"d/m/Y" }}
+          </p>
+        </div>
+        <div class="text-right">
+          <p class="text-2xl font-bold text-white">R$ {{ subscription.plan.price_monthly }}</p>
+          <p class="text-xs text-white/40">por mês via Pix</p>
+        </div>
+      </div>
+
+      <!-- Cancelar -->
+      <div class="mt-6 pt-6 border-t border-white/10">
+        <form method="post" action="{% url 'billing:cancel' %}"
+              onsubmit="return confirm('Tem certeza que deseja cancelar sua assinatura?')">
+          {% csrf_token %}
+          <button type="submit"
+                  class="text-sm text-red-400 hover:text-red-300 transition-colors">
+            Cancelar assinatura
+          </button>
+        </form>
+      </div>
+
+    {% elif subscription and subscription.status == 'pending' %}
+      <div class="text-center py-4">
+        <div class="text-3xl mb-3">⏳</div>
+        <p class="font-semibold text-white mb-1">Aguardando pagamento</p>
+        <p class="text-sm text-white/40 mb-4">Complete o pagamento para ativar o plano Pro.</p>
+        <a href="{% url 'billing:checkout' %}"
+           class="inline-block px-6 py-2 bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold rounded-xl transition-colors">
+          Concluir pagamento
+        </a>
+      </div>
+
+    {% elif subscription and subscription.status == 'past_due' %}
+      <div class="text-center py-4">
+        <div class="text-3xl mb-3">⚠️</div>
+        <p class="font-semibold text-white mb-1">Pagamento em atraso</p>
+        <p class="text-sm text-white/40 mb-4">Regularize para manter acesso ao plano Pro.</p>
+        <a href="{% url 'billing:checkout' %}"
+           class="inline-block px-6 py-2 bg-yellow-500 hover:bg-yellow-600 text-black text-sm font-semibold rounded-xl transition-colors">
+          Pagar agora
+        </a>
+      </div>
+
+    {% else %}
+      <div class="text-center py-4">
+        <div class="text-3xl mb-3">🆓</div>
+        <p class="font-semibold text-white mb-1">Você está no plano Free</p>
+        <p class="text-sm text-white/40 mb-4">Faça upgrade para desbloquear todos os recursos.</p>
+        <a href="{% url 'billing:pricing' %}"
+           class="inline-block px-6 py-2 bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold rounded-xl transition-colors">
+          Ver planos
+        </a>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Histórico de faturas -->
+  {% if invoices %}
+  <div class="glass rounded-2xl p-6">
+    <h2 class="text-sm font-semibold text-white/60 uppercase tracking-wider mb-4">Histórico de Faturas</h2>
+    <div class="space-y-3">
+      {% for invoice in invoices %}
+      <div class="flex items-center justify-between py-2 border-b border-white/5 last:border-0">
+        <div>
+          <p class="text-sm text-white">{{ invoice.reference_month|date:"F Y" }}</p>
+          <p class="text-xs text-white/40">{{ invoice.created_at|date:"d/m/Y" }}</p>
+        </div>
+        <div class="flex items-center gap-4">
+          <p class="text-sm font-semibold text-white">R$ {{ invoice.amount }}</p>
+          <span class="text-xs px-2 py-1 rounded-full
+            {% if invoice.status == 'paid' %}bg-green-500/20 text-green-400
+            {% elif invoice.status == 'pending' %}bg-yellow-500/20 text-yellow-400
+            {% else %}bg-red-500/20 text-red-400{% endif %}">
+            {% if invoice.status == 'paid' %}Pago
+            {% elif invoice.status == 'pending' %}Pendente
+            {% else %}Expirado{% endif %}
+          </span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

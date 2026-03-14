@@ -18,12 +18,10 @@ class CustomUserManager(BaseUserManager):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
         extra_fields.setdefault('is_active', True)
-
         if extra_fields.get('is_staff') is not True:
             raise ValueError('Superuser precisa ter is_staff=True.')
         if extra_fields.get('is_superuser') is not True:
             raise ValueError('Superuser precisa ter is_superuser=True.')
-
         return self.create_user(email, password, **extra_fields)
 
 
@@ -36,7 +34,6 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
-
     objects = CustomUserManager()
 
     class Meta:
@@ -67,6 +64,10 @@ class Profile(BaseModel):
     plan = models.CharField(max_length=10, choices=PLAN_CHOICES, default=PLAN_FREE)
     custom_domain = models.CharField(max_length=255, blank=True, null=True, unique=True)
 
+    # Campos necessários para o AbacatePay
+    cpf = models.CharField(max_length=14, blank=True)    # formato: 000.000.000-00
+    phone = models.CharField(max_length=20, blank=True)  # formato: (11) 99999-9999
+
     class Meta:
         verbose_name = 'Perfil'
         verbose_name_plural = 'Perfis'
@@ -76,4 +77,11 @@ class Profile(BaseModel):
 
     @property
     def is_pro(self):
-        return self.plan == self.PLAN_PRO
+        """
+        Verifica se o usuário tem plano Pro com assinatura ativa.
+        Usa a subscription se existir, senão cai no campo plan como fallback.
+        """
+        try:
+            return self.subscription.is_active
+        except Exception:
+            return self.plan == self.PLAN_PRO

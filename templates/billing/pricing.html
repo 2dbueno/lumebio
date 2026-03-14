@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% block title %}Planos — LumeBio{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-16">
+
+  <div class="text-center mb-12">
+    <h1 class="text-3xl font-bold text-white mb-3">Escolha seu plano</h1>
+    <p class="text-white/50">Comece grátis. Faça upgrade quando estiver pronto.</p>
+  </div>
+
+  <div class="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+
+    <!-- Plano Free -->
+    <div class="glass rounded-2xl p-8 flex flex-col">
+      <div class="mb-6">
+        <h2 class="text-xl font-bold text-white mb-1">Free</h2>
+        <p class="text-4xl font-bold text-white">R$ 0<span class="text-lg text-white/40 font-normal">/mês</span></p>
+      </div>
+      <ul class="space-y-3 mb-8 flex-1">
+        <li class="flex items-center gap-2 text-sm text-white/70">
+          <span class="text-green-400">✓</span> Até 5 links
+        </li>
+        <li class="flex items-center gap-2 text-sm text-white/70">
+          <span class="text-green-400">✓</span> 3 temas básicos
+        </li>
+        <li class="flex items-center gap-2 text-sm text-white/70">
+          <span class="text-green-400">✓</span> Analytics básico
+        </li>
+        <li class="flex items-center gap-2 text-sm text-white/40">
+          <span class="text-white/20">✗</span> Domínio customizado
+        </li>
+        <li class="flex items-center gap-2 text-sm text-white/40">
+          <span class="text-white/20">✗</span> Temas exclusivos
+        </li>
+        <li class="flex items-center gap-2 text-sm text-white/40">
+          <span class="text-white/20">✗</span> Links ilimitados
+        </li>
+      </ul>
+      {% if profile.is_pro %}
+        <button disabled class="w-full py-3 rounded-xl bg-white/5 text-white/30 text-sm font-medium cursor-not-allowed">
+          Plano atual: Pro
+        </button>
+      {% else %}
+        <button disabled class="w-full py-3 rounded-xl bg-white/5 text-white/50 text-sm font-medium cursor-not-allowed">
+          Plano atual
+        </button>
+      {% endif %}
+    </div>
+
+    <!-- Plano Pro -->
+    <div class="relative rounded-2xl p-8 flex flex-col"
+         style="background: rgba(124,58,237,0.12); border: 1px solid rgba(124,58,237,0.4);">
+
+      <!-- Badge -->
+      <div class="absolute -top-3 left-1/2 -translate-x-1/2">
+        <span class="bg-violet-600 text-white text-xs font-bold px-4 py-1 rounded-full uppercase tracking-wider">
+          Recomendado
+        </span>
+      </div>
+
+      <div class="mb-6">
+        <h2 class="text-xl font-bold text-white mb-1">Pro</h2>
+        <p class="text-4xl font-bold text-white">
+          R$ 29<span class="text-lg text-white/40 font-normal">/mês</span>
+        </p>
+        <p class="text-xs text-white/40 mt-1">Pago via Pix · Cancele quando quiser</p>
+      </div>
+
+      <ul class="space-y-3 mb-8 flex-1">
+        <li class="flex items-center gap-2 text-sm text-white/70">
+          <span class="text-violet-400">✓</span> Links ilimitados
+        </li>
+        <li class="flex items-center gap-2 text-sm text-white/70">
+          <span class="text-violet-400">✓</span> 10 temas exclusivos
+        </li>
+        <li class="flex items-center gap-2 text-sm text-white/70">
+          <span class="text-violet-400">✓</span> Analytics avançado (90 dias)
+        </li>
+        <li class="flex items-center gap-2 text-sm text-white/70">
+          <span class="text-violet-400">✓</span> Domínio customizado
+        </li>
+        <li class="flex items-center gap-2 text-sm text-white/70">
+          <span class="text-violet-400">✓</span> Blocos avançados (YouTube, Spotify)
+        </li>
+        <li class="flex items-center gap-2 text-sm text-white/70">
+          <span class="text-violet-400">✓</span> Agendamento de links
+        </li>
+      </ul>
+
+      {% if profile.is_pro %}
+        <a href="{% url 'billing:portal' %}"
+           class="w-full py-3 rounded-xl bg-violet-600/30 text-violet-300 text-sm font-semibold text-center border border-violet-500/30">
+          Gerenciar assinatura
+        </a>
+      {% elif subscription and subscription.status == 'pending' %}
+        <a href="{% url 'billing:checkout' %}"
+           class="w-full py-3 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold text-center transition-colors">
+          Continuar pagamento
+        </a>
+      {% else %}
+        <a href="{% url 'billing:checkout' %}"
+           class="w-full py-3 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold text-center transition-colors">
+          Assinar Pro — R$ 29/mês
+        </a>
+      {% endif %}
+
+    </div>
+  </div>
+
+  <!-- Garantias -->
+  <div class="flex flex-wrap justify-center gap-8 mt-12 text-center">
+    <div>
+      <p class="text-2xl mb-1">🔒</p>
+      <p class="text-xs text-white/40">Pagamento seguro<br>via Pix</p>
+    </div>
+    <div>
+      <p class="text-2xl mb-1">🇧🇷</p>
+      <p class="text-xs text-white/40">Preço em reais<br>sem surpresas</p>
+    </div>
+    <div>
+      <p class="text-2xl mb-1">🔄</p>
+      <p class="text-xs text-white/40">Cancele quando<br>quiser</p>
+    </div>
+    <div>
+      <p class="text-2xl mb-1">⚡</p>
+      <p class="text-xs text-white/40">Ativação<br>imediata</p>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Pagamento confirmado — LumeBio{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center px-4">
+  <div class="max-w-md w-full text-center">
+    <div class="glass rounded-2xl p-10">
+      <div class="text-5xl mb-4">🥑</div>
+      <h1 class="text-2xl font-bold text-white mb-2">Pagamento confirmado!</h1>
+      <p class="text-white/50 mb-8">
+        Seu plano Pro será ativado em instantes após a confirmação do Pix.
+        Você receberá um e-mail assim que a assinatura estiver ativa.
+      </p>
+      <div class="space-y-3">
+        <a href="/dashboard"
+           class="block w-full py-3 bg-violet-600 hover:bg-violet-700 text-white font-semibold rounded-xl transition-colors text-sm">
+          Ir para o Dashboard
+        </a>
+        <a href="{% url 'billing:portal' %}"
+           class="block w-full py-3 bg-white/5 hover:bg-white/10 text-white/70 rounded-xl transition-colors text-sm">
+          Ver minha assinatura
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
