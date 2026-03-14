@@ -72,11 +72,38 @@ def test_block_redirect(client, page):
     assert response['Location'] == 'https://google.com'
 
 
-def test_block_redirect_registra_click(client, page):
+def test_block_redirect_sem_consentimento_nao_registra(client, page):
+    """Visitante sem cookie não deve gerar LinkClick."""
     from apps.pages.models import LinkClick
     block = Block.objects.create(
         page=page, title='Google', url='https://google.com',
         block_type='link', is_active=True
     )
+    # Sem cookie — não deve registrar
+    client.get(f'/r/{block.id}/')
+    assert LinkClick.objects.filter(block=block).count() == 0
+
+
+def test_block_redirect_com_consentimento_registra_click(client, page):
+    """Visitante com cookie accepted deve gerar 1 LinkClick."""
+    from apps.pages.models import LinkClick
+    block = Block.objects.create(
+        page=page, title='Google', url='https://google.com',
+        block_type='link', is_active=True
+    )
+    # Envia o cookie de consentimento — comportamento esperado em produção
+    client.cookies['biolink_consent'] = 'accepted'
     client.get(f'/r/{block.id}/')
     assert LinkClick.objects.filter(block=block).count() == 1
+
+
+def test_block_redirect_com_consentimento_recusado_nao_registra(client, page):
+    """Visitante que recusou o consentimento não deve gerar LinkClick."""
+    from apps.pages.models import LinkClick
+    block = Block.objects.create(
+        page=page, title='Google', url='https://google.com',
+        block_type='link', is_active=True
+    )
+    client.cookies['biolink_consent'] = 'refused'
+    client.get(f'/r/{block.id}/')
+    assert LinkClick.objects.filter(block=block).count() == 0
