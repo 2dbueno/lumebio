@@ -1,8 +1,10 @@
 from django.contrib import admin
 from django.urls import path, include
+from django.views.generic import TemplateView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('home/', TemplateView.as_view(template_name='home/landing.html'), name='landing'),
     path('accounts/', include('allauth.urls')),
     path('accounts/', include('apps.accounts.urls', namespace='accounts')),
     path('dashboard/', include('apps.dashboard.urls')),

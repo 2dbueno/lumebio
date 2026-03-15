@@ -31,6 +31,7 @@ class CustomUserAdmin(BaseUserAdmin):
 
 @admin.register(Profile)
 class ProfileAdmin(admin.ModelAdmin):
-    list_display = ('slug', 'user', 'plan', 'created_at')
-    list_filter = ('plan',)
-    search_fields = ('slug', 'user__email')
+    list_display = ['slug', 'user', 'plan', 'marketing_consent', 'signup_ip', 'created_at']
+    list_filter = ['plan', 'marketing_consent']
+    search_fields = ['slug', 'user__email']
+    readonly_fields = ['signup_ip', 'marketing_consent_at', 'created_at', 'updated_at']

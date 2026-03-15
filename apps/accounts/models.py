@@ -64,9 +64,21 @@ class Profile(BaseModel):
     plan = models.CharField(max_length=10, choices=PLAN_CHOICES, default=PLAN_FREE)
     custom_domain = models.CharField(max_length=255, blank=True, null=True, unique=True)
 
-    # Campos necessários para o AbacatePay
-    cpf = models.CharField(max_length=14, blank=True)    # formato: 000.000.000-00
-    phone = models.CharField(max_length=20, blank=True)  # formato: (11) 99999-9999
+    # Campos para billing (AbacatePay)
+    cpf = models.CharField(max_length=14, blank=True)
+    phone = models.CharField(max_length=20, blank=True)
+
+    # ── Dados LGPD coletados no cadastro ─────────────────────────────────────
+    # Base legal: execução de contrato (Art. 7º V) + consentimento (Art. 7º I)
+
+    # IP anonimizado no cadastro — segurança e prevenção de fraude
+    # Base legal: interesse legítimo (Art. 7º IX)
+    signup_ip = models.CharField(max_length=45, blank=True)
+
+    # Consentimento explícito para email marketing
+    # Base legal: consentimento (Art. 7º I) — opt-in no formulário de cadastro
+    marketing_consent = models.BooleanField(default=False)
+    marketing_consent_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         verbose_name = 'Perfil'

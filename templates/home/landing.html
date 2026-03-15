@@ -1,0 +1,739 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LumeBio — Seu link. Sua identidade. Seu Brasil.</title>
+  <meta name="description" content="Crie sua página bio com design Web3, analytics próprio LGPD-compliant e pague em Reais via Pix.">
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a14;
+      --violet: #7C3AED;
+      --violet-light: #A78BFA;
+      --blue: #2563EB;
+      --pink: #DB2777;
+      --card: rgba(255,255,255,0.04);
+      --border: rgba(255,255,255,0.08);
+      --text: rgba(255,255,255,0.6);
+      --text-dim: rgba(255,255,255,0.3);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: #fff;
+      font-family: -apple-system, 'Inter', sans-serif;
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
+
+    /* ── Canvas ── */
+    #cvs {
+      position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none; z-index: 0; opacity: 0.35;
+    }
+
+    /* ── Layout helpers ── */
+    .wrap { max-width: 1100px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+    .wrap-sm { max-width: 760px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+    section { position: relative; z-index: 1; }
+
+    /* ── Navbar ── */
+    .nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      height: 60px; padding: 0 24px;
+      display: flex; align-items: center; justify-content: space-between;
+      transition: background 0.3s, border-color 0.3s;
+    }
+    .nav.solid {
+      background: rgba(10,10,20,0.92);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      font-weight: 800; font-size: 1.1rem; color: #fff;
+      text-decoration: none; display: flex; align-items: center; gap: 8px;
+    }
+    .nav-logo .dot { color: var(--violet-light); }
+    .nav-links { display: flex; align-items: center; gap: 28px; }
+    .nav-links a { color: var(--text); text-decoration: none; font-size: 0.875rem; transition: color 0.2s; }
+    .nav-links a:hover { color: #fff; }
+    .nav-ctas { display: flex; align-items: center; gap: 10px; }
+
+    /* ── Botões ── */
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 10px 22px; border-radius: 12px; font-size: 0.875rem;
+      font-weight: 600; text-decoration: none; cursor: pointer;
+      transition: all 0.25s ease; border: none;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--violet), var(--blue));
+      color: #fff;
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(124,58,237,0.4); }
+    .btn-outline {
+      background: transparent; color: var(--text);
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+    .btn-outline:hover { border-color: var(--violet-light); color: #fff; background: rgba(124,58,237,0.08); }
+    .btn-lg { padding: 14px 32px; font-size: 1rem; border-radius: 14px; }
+
+    /* ── Glass card ── */
+    .glass {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      backdrop-filter: blur(12px);
+    }
+
+    /* ── Gradiente de texto ── */
+    .grad {
+      background: linear-gradient(135deg, var(--violet-light), var(--violet), var(--blue));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .grad-pink {
+      background: linear-gradient(135deg, var(--violet-light), var(--pink));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+
+    /* ── Badge ── */
+    .badge {
+      display: inline-flex; align-items: center; gap-6px;
+      padding: 6px 14px; border-radius: 99px; font-size: 0.75rem; font-weight: 700;
+      background: rgba(124,58,237,0.15); border: 1px solid rgba(124,58,237,0.3);
+      color: var(--violet-light); letter-spacing: 0.04em;
+    }
+
+    /* ══════════════════════════════════════
+       HERO
+    ══════════════════════════════════════ */
+    .hero {
+      min-height: 100vh;
+      display: flex; align-items: center;
+      padding: 80px 24px 60px;
+    }
+    .hero-inner {
+      max-width: 1100px; margin: 0 auto; width: 100%;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center;
+    }
+    .hero h1 { font-size: clamp(2.2rem, 4vw, 3.4rem); font-weight: 900; line-height: 1.15; margin: 20px 0 18px; }
+    .hero p { font-size: 1.05rem; color: var(--text); max-width: 460px; margin-bottom: 32px; }
+    .hero-ctas { display: flex; gap: 12px; flex-wrap: wrap; }
+    .hero-stats { display: flex; gap: 32px; margin-top: 40px; padding-top: 32px; border-top: 1px solid var(--border); }
+    .hero-stats div p:first-child { font-size: 1.6rem; font-weight: 900; }
+    .hero-stats div p:last-child { font-size: 0.75rem; color: var(--text-dim); margin-top: 2px; }
+
+    /* Mock da bio */
+    .bio-wrap { position: relative; display: flex; justify-content: flex-end; }
+    .bio-card {
+      background: #0f0f1a; border: 1px solid rgba(124,58,237,0.3);
+      border-radius: 24px; padding: 28px 22px; width: 270px;
+      box-shadow: 0 0 60px rgba(124,58,237,0.18);
+    }
+    .bio-avatar {
+      width: 60px; height: 60px; border-radius: 50%; margin: 0 auto 10px;
+      background: linear-gradient(135deg, var(--violet), var(--blue));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem; font-weight: 900;
+    }
+    .bio-card .name { text-align: center; font-weight: 700; font-size: 0.9rem; }
+    .bio-card .sub { text-align: center; font-size: 0.72rem; color: var(--text-dim); margin-bottom: 16px; }
+    .bio-btn {
+      display: block; padding: 11px 16px; margin-bottom: 8px;
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px; color: #fff; text-decoration: none; text-align: center;
+      font-size: 0.82rem; transition: all 0.2s;
+    }
+    .bio-btn:hover { background: rgba(124,58,237,0.2); border-color: rgba(167,139,250,0.4); transform: translateY(-1px); }
+    .bio-stats {
+      margin-top: 12px; padding: 10px 12px; border-radius: 10px;
+      background: rgba(124,58,237,0.1); border: 1px solid rgba(124,58,237,0.2);
+      display: flex; justify-content: space-between;
+    }
+    .bio-stats div { text-align: center; }
+    .bio-stats .val { font-weight: 700; font-size: 0.85rem; }
+    .bio-stats .lbl { font-size: 0.65rem; color: var(--text-dim); }
+    .float-badge {
+      position: absolute; padding: 8px 14px; border-radius: 10px;
+      background: rgba(10,10,20,0.9); border: 1px solid rgba(124,58,237,0.35);
+      font-size: 0.75rem; font-weight: 600; white-space: nowrap;
+      backdrop-filter: blur(8px);
+    }
+    .fb1 { top: -16px; right: -16px; }
+    .fb2 { bottom: -16px; left: -16px; }
+
+    /* ══════════════════════════════════════
+       TICKER
+    ══════════════════════════════════════ */
+    .ticker-wrap {
+      overflow: hidden; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+      padding: 14px 0; position: relative; z-index: 1;
+    }
+    .ticker { display: flex; width: max-content; animation: tick 28s linear infinite; }
+    .ticker-item {
+      padding: 0 40px; font-size: 0.82rem; color: var(--text-dim);
+      display: flex; align-items: center; gap: 10px; white-space: nowrap;
+    }
+    .ticker-item em { color: rgba(167,139,250,0.7); font-style: normal; font-weight: 600; }
+    @keyframes tick { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+    /* ══════════════════════════════════════
+       SEÇÕES GENÉRICAS
+    ══════════════════════════════════════ */
+    .section { padding: 88px 0; }
+    .section-alt { background: rgba(124,58,237,0.04); }
+    .section-head { text-align: center; margin-bottom: 56px; }
+    .section-head .eyebrow {
+      font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em;
+      color: var(--violet-light); text-transform: uppercase; margin-bottom: 12px;
+    }
+    .section-head h2 { font-size: clamp(1.8rem, 3vw, 2.6rem); font-weight: 900; line-height: 1.2; }
+    .section-head p { color: var(--text); margin-top: 12px; font-size: 1rem; }
+
+    /* ══════════════════════════════════════
+       FEATURES GRID
+    ══════════════════════════════════════ */
+    .features-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
+    }
+    .feat {
+      background: var(--card); border: 1px solid var(--border); border-radius: 18px;
+      padding: 26px; transition: all 0.3s;
+    }
+    .feat:hover { border-color: rgba(124,58,237,0.4); transform: translateY(-3px); box-shadow: 0 16px 40px rgba(124,58,237,0.12); }
+    .feat .icon { font-size: 1.8rem; margin-bottom: 14px; }
+    .feat h3 { font-size: 1rem; font-weight: 700; margin-bottom: 8px; }
+    .feat p { font-size: 0.875rem; color: var(--text); line-height: 1.65; }
+
+    /* ══════════════════════════════════════
+       STEPS
+    ══════════════════════════════════════ */
+    .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; }
+    .step { text-align: center; }
+    .step-num {
+      width: 52px; height: 52px; border-radius: 14px; margin: 0 auto 16px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; font-weight: 900;
+    }
+    .step h3 { font-weight: 700; margin-bottom: 8px; }
+    .step p { font-size: 0.875rem; color: var(--text); }
+
+    /* ══════════════════════════════════════
+       DEPOIMENTOS
+    ══════════════════════════════════════ */
+    .reviews { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .review { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 24px; }
+    .review-author { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+    .review-avatar {
+      width: 44px; height: 44px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1rem;
+    }
+    .review-author h4 { font-size: 0.875rem; font-weight: 600; }
+    .review-author p { font-size: 0.75rem; color: var(--text-dim); }
+    .review blockquote { font-size: 0.875rem; color: var(--text); line-height: 1.65; font-style: italic; }
+    .stars { color: #FBBF24; font-size: 0.8rem; margin-top: 12px; }
+
+    /* ══════════════════════════════════════
+       PRICING
+    ══════════════════════════════════════ */
+    .pricing-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; max-width: 720px; margin: 0 auto; }
+    .plan { border-radius: 22px; padding: 36px; display: flex; flex-direction: column; }
+    .plan-free { background: var(--card); border: 1px solid var(--border); }
+    .plan-pro { background: rgba(124,58,237,0.1); border: 1px solid rgba(124,58,237,0.4); position: relative; }
+    .plan-badge {
+      position: absolute; top: -12px; left: 28px;
+      padding: 4px 14px; border-radius: 99px; font-size: 0.72rem; font-weight: 700;
+      background: linear-gradient(135deg, var(--violet), var(--blue)); color: #fff;
+    }
+    .plan-name { font-weight: 700; font-size: 1.1rem; margin-bottom: 6px; }
+    .plan-price { font-size: 2.4rem; font-weight: 900; }
+    .plan-price span { font-size: 1rem; font-weight: 400; color: var(--text-dim); }
+    .plan-sub { font-size: 0.8rem; color: var(--text-dim); margin-bottom: 24px; }
+    .plan ul { list-style: none; flex: 1; margin-bottom: 28px; }
+    .plan ul li { font-size: 0.875rem; padding: 7px 0; display: flex; align-items: center; gap: 8px; }
+    .plan ul li .ok { color: #34D399; }
+    .plan ul li .no { color: rgba(255,255,255,0.2); }
+    .plan ul li.dim { color: rgba(255,255,255,0.3); }
+
+    /* ══════════════════════════════════════
+       HISTÓRIA
+    ══════════════════════════════════════ */
+    .story-card {
+      background: var(--card); border: 1px solid var(--border); border-radius: 22px; padding: 40px;
+      display: flex; gap: 32px; align-items: flex-start;
+    }
+    .story-avatar {
+      flex-shrink: 0; width: 72px; height: 72px; border-radius: 16px;
+      background: linear-gradient(135deg, var(--violet), var(--blue));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.8rem; font-weight: 900;
+    }
+    .story-name { font-weight: 700; margin-top: 8px; font-size: 0.9rem; }
+    .story-role { font-size: 0.75rem; color: var(--text-dim); }
+    .story-text { color: var(--text); line-height: 1.8; }
+    .story-text p + p { margin-top: 14px; }
+    .story-text em { color: rgba(167,139,250,0.85); font-style: italic; }
+    .story-highlight { color: rgba(167,139,250,0.9); font-weight: 600; }
+
+    /* ══════════════════════════════════════
+       FAQ
+    ══════════════════════════════════════ */
+    .faq-item { border-bottom: 1px solid var(--border); }
+    .faq-q {
+      width: 100%; background: none; border: none; color: #fff;
+      font-size: 0.95rem; font-weight: 600; padding: 18px 0;
+      display: flex; justify-content: space-between; align-items: center;
+      gap: 16px; cursor: pointer; text-align: left;
+    }
+    .faq-q .icon { color: var(--violet-light); font-size: 1.1rem; flex-shrink: 0; transition: transform 0.3s; }
+    .faq-q.open .icon { transform: rotate(45deg); }
+    .faq-a {
+      font-size: 0.875rem; color: var(--text); line-height: 1.7;
+      max-height: 0; overflow: hidden; transition: max-height 0.3s ease, padding 0.3s;
+    }
+    .faq-a.open { max-height: 160px; padding-bottom: 18px; }
+
+    /* ══════════════════════════════════════
+       CTA FINAL
+    ══════════════════════════════════════ */
+    .cta-box {
+      background: rgba(124,58,237,0.08); border: 1px solid rgba(124,58,237,0.22);
+      border-radius: 24px; padding: 60px 40px; text-align: center;
+    }
+    .cta-box h2 { font-size: clamp(1.8rem, 3vw, 2.4rem); font-weight: 900; line-height: 1.25; margin-bottom: 14px; }
+    .cta-box p { color: var(--text); margin-bottom: 28px; }
+
+    /* ══════════════════════════════════════
+       FOOTER
+    ══════════════════════════════════════ */
+    footer {
+      border-top: 1px solid var(--border); padding: 48px 0; position: relative; z-index: 1;
+    }
+    .footer-inner {
+      display: flex; justify-content: space-between; flex-wrap: wrap; gap: 32px; margin-bottom: 32px;
+    }
+    .footer-logo { font-weight: 800; font-size: 1rem; color: #fff; text-decoration: none; }
+    .footer-logo .dot { color: var(--violet-light); }
+    .footer-tagline { font-size: 0.8rem; color: var(--text-dim); margin-top: 6px; }
+    .footer-cols { display: flex; gap: 48px; }
+    .footer-col h4 { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); margin-bottom: 14px; }
+    .footer-col a { display: block; font-size: 0.82rem; color: var(--text-dim); text-decoration: none; margin-bottom: 8px; transition: color 0.2s; }
+    .footer-col a:hover { color: #fff; }
+    .footer-bottom { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.04); }
+    .footer-bottom p { font-size: 0.75rem; color: var(--text-dim); }
+
+    /* ══════════════════════════════════════
+       REVEAL
+    ══════════════════════════════════════ */
+    .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.65s ease, transform 0.65s ease; }
+    .reveal.on { opacity: 1; transform: none; }
+    .delay-1 { transition-delay: 0.1s; }
+    .delay-2 { transition-delay: 0.2s; }
+    .delay-3 { transition-delay: 0.3s; }
+
+    /* ══════════════════════════════════════
+       RESPONSIVE
+    ══════════════════════════════════════ */
+    @media (max-width: 900px) {
+      .hero-inner { grid-template-columns: 1fr; }
+      .bio-wrap { justify-content: center; margin-top: 40px; }
+      .features-grid { grid-template-columns: 1fr 1fr; }
+      .steps { grid-template-columns: 1fr; gap: 24px; }
+      .reviews { grid-template-columns: 1fr; }
+      .pricing-grid { grid-template-columns: 1fr; }
+      .story-card { flex-direction: column; }
+      .nav-links { display: none; }
+    }
+    @media (max-width: 600px) {
+      .features-grid { grid-template-columns: 1fr; }
+      .pricing-grid { grid-template-columns: 1fr; }
+      .footer-cols { gap: 24px; }
+      .hero-stats { gap: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="cvs"></canvas>
+
+<!-- ══════════════════════════════════════
+     NAVBAR
+══════════════════════════════════════ -->
+<nav class="nav" id="nav">
+  <a href="/" class="nav-logo">Lume<span class="dot">Bio</span></a>
+  <div class="nav-links">
+    <a href="#features">Funcionalidades</a>
+    <a href="#pricing">Preços</a>
+    <a href="#story">História</a>
+    <a href="#faq">FAQ</a>
+  </div>
+  <div class="nav-ctas">
+    <a href="/accounts/login/" class="btn btn-outline">Entrar</a>
+    <a href="/accounts/signup/" class="btn btn-primary">Criar grátis ✦</a>
+  </div>
+</nav>
+
+<!-- ══════════════════════════════════════
+     HERO
+══════════════════════════════════════ -->
+<section class="hero">
+  <div class="hero-inner">
+
+    <div>
+      <div class="badge">🇧🇷 Feito no Brasil</div>
+      <h1>Seu link.<br>Sua identidade.<br><span class="grad">Sua história.</span></h1>
+      <p>Crie sua página bio com design Web3 exclusivo, analytics de verdade e pague em Reais via Pix. Sem dólar, sem surpresas.</p>
+      <div class="hero-ctas">
+        <a href="/accounts/signup/" class="btn btn-primary btn-lg">Criar minha página grátis →</a>
+        <a href="#features" class="btn btn-outline btn-lg">Como funciona</a>
+      </div>
+      <div class="hero-stats">
+        <div><p>R$&nbsp;29</p><p>por mês via Pix</p></div>
+        <div><p>100%</p><p>LGPD-compliant</p></div>
+        <div><p>∞</p><p>links no Pro</p></div>
+      </div>
+    </div>
+
+    <div class="bio-wrap">
+      <div style="position:relative;">
+        <div style="position:absolute;inset:0;border-radius:28px;background:radial-gradient(circle,#7C3AED,#2563EB);opacity:0.18;filter:blur(40px);transform:scale(0.85);"></div>
+        <div class="bio-card" id="bio-card">
+          <div class="bio-avatar">🎨</div>
+          <p class="name">@bueno.criador</p>
+          <p class="sub">Designer • Dev • Criador</p>
+          <a href="#" class="bio-btn">🎬 Meu canal no YouTube</a>
+          <a href="#" class="bio-btn">📸 Instagram</a>
+          <a href="#" class="bio-btn">🛍️ Minha loja</a>
+          <a href="#" class="bio-btn">🎵 Spotify</a>
+          <div class="bio-stats">
+            <div><div class="val" id="cv">0</div><div class="lbl">views</div></div>
+            <div><div class="val" id="cc">0</div><div class="lbl">cliques</div></div>
+            <div><div class="val grad" id="ck">0%</div><div class="lbl">conversão</div></div>
+          </div>
+        </div>
+        <div class="float-badge fb1" id="fb1">✦ Design Web3</div>
+        <div class="float-badge fb2" id="fb2">🇧🇷 Pix • R$ 29/mês</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════
+     TICKER
+══════════════════════════════════════ -->
+<div class="ticker-wrap">
+  <div class="ticker">
+    {% for _ in "12345678" %}
+    <div class="ticker-item">🔗 Links ilimitados</div>
+    <div class="ticker-item"><em>📊</em> Analytics LGPD-compliant</div>
+    <div class="ticker-item">🎨 Design Web3 exclusivo</div>
+    <div class="ticker-item"><em>🇧🇷</em> Pix em Reais</div>
+    <div class="ticker-item">⚡ Ativação imediata</div>
+    <div class="ticker-item"><em>🔒</em> Dados protegidos</div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     FUNCIONALIDADES
+══════════════════════════════════════ -->
+<section class="section" id="features">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="eyebrow">Funcionalidades</div>
+      <h2>Tudo que um criador <span class="grad">precisa de verdade</span></h2>
+      <p>Não é só um link. É uma ferramenta de crescimento com dados reais sobre sua audiência.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feat reveal"><div class="icon">📊</div><h3>Analytics de verdade</h3><p>Saiba quais links geram mais interesse, de onde vem seu público e em qual dispositivo acessam. Dados reais, sem achismo.</p></div>
+      <div class="feat reveal delay-1"><div class="icon">🔒</div><h3>100% LGPD-compliant</h3><p>Analytics próprio sem cookies de terceiros. IPs anonimizados, consentimento explícito e visitantes protegidos conforme a lei brasileira.</p></div>
+      <div class="feat reveal delay-2"><div class="icon">🎨</div><h3>Design Web3 exclusivo</h3><p>10 temas com estética Web3 — glassmorphism, gradientes neon e efeitos que fazem sua página se destacar.</p></div>
+      <div class="feat reveal"><div class="icon">🇧🇷</div><h3>Preço em Reais • Pix</h3><p>R$ 29/mês sem variação cambial, sem cartão obrigatório. Pague pelo Pix e ative na hora.</p></div>
+      <div class="feat reveal delay-1"><div class="icon">⚡</div><h3>Taxa de conversão</h3><p>Veja quantas pessoas visitaram vs quantas clicaram. Descubra quais links realmente convertem.</p></div>
+      <div class="feat reveal delay-2"><div class="icon">🔗</div><h3>Links ilimitados no Pro</h3><p>Sem limite de links nem de blocos. YouTube, Spotify, Instagram, loja, WhatsApp — tudo em um lugar.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════
+     COMO FUNCIONA
+══════════════════════════════════════ -->
+<section class="section section-alt">
+  <div class="wrap-sm">
+    <div class="section-head reveal">
+      <div class="eyebrow">Como funciona</div>
+      <h2>Três passos para <span class="grad">brilhar</span></h2>
+    </div>
+    <div class="steps">
+      <div class="step reveal">
+        <div class="step-num" style="background:rgba(124,58,237,0.2);border:1px solid rgba(124,58,237,0.3);color:#A78BFA;">1</div>
+        <h3>Crie sua conta</h3>
+        <p>Em menos de 1 minuto, sem cartão de crédito. Grátis para começar.</p>
+      </div>
+      <div class="step reveal delay-1">
+        <div class="step-num" style="background:rgba(37,99,235,0.2);border:1px solid rgba(37,99,235,0.3);color:#60A5FA;">2</div>
+        <h3>Adicione seus links</h3>
+        <p>Instagram, YouTube, loja, WhatsApp. Arraste para reordenar quando quiser.</p>
+      </div>
+      <div class="step reveal delay-2">
+        <div class="step-num" style="background:rgba(219,39,119,0.2);border:1px solid rgba(219,39,119,0.3);color:#F472B6;">3</div>
+        <h3>Publique e acompanhe</h3>
+        <p>Cole o link no Instagram e veja em tempo real quais conteúdos chamam mais atenção.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════
+     DEPOIMENTOS
+══════════════════════════════════════ -->
+<section class="section">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="eyebrow">Criadores</div>
+      <h2>Quem está <span class="grad-pink">crescendo com o LumeBio</span></h2>
+    </div>
+    <div class="reviews">
+      <div class="review reveal">
+        <div class="review-author">
+          <div class="review-avatar" style="background:linear-gradient(135deg,#7C3AED,#DB2777);">M</div>
+          <div><h4>@marcelinha.fit</h4><p>Criadora de conteúdo fitness</p></div>
+        </div>
+        <blockquote>"Finalmente consigo ver quais links meu público clica mais. Descobri que meu link do WhatsApp converte 3x mais que o Instagram."</blockquote>
+        <div class="stars">★★★★★</div>
+      </div>
+      <div class="review reveal delay-1">
+        <div class="review-author">
+          <div class="review-avatar" style="background:linear-gradient(135deg,#2563EB,#7C3AED);">R</div>
+          <div><h4>@rodrigo.tech</h4><p>Dev & criador tech</p></div>
+        </div>
+        <blockquote>"O design Web3 é diferente de tudo no mercado. Minha página parece um site profissional, não um link simples."</blockquote>
+        <div class="stars">★★★★★</div>
+      </div>
+      <div class="review reveal delay-2">
+        <div class="review-author">
+          <div class="review-avatar" style="background:linear-gradient(135deg,#DB2777,#7C3AED);">A</div>
+          <div><h4>@ana.moda</h4><p>Influencer de moda</p></div>
+        </div>
+        <blockquote>"Pagar em Pix foi decisivo. Sem cartão, sem burocracia. E R$ 29 é justo — pago menos do que um café por semana."</blockquote>
+        <div class="stars">★★★★★</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════
+     PREÇOS
+══════════════════════════════════════ -->
+<section class="section section-alt" id="pricing">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="eyebrow">Preços</div>
+      <h2>Simples assim. <span class="grad">Sem pegadinha.</span></h2>
+      <p>Comece grátis. Faça upgrade quando estiver pronto.</p>
+    </div>
+    <div class="pricing-grid">
+      <div class="plan plan-free reveal">
+        <div class="plan-name">Free</div>
+        <div class="plan-price">R$ 0<span>/mês</span></div>
+        <div class="plan-sub">Para sempre grátis</div>
+        <ul>
+          <li><span class="ok">✓</span> Até 5 links</li>
+          <li><span class="ok">✓</span> 3 temas básicos</li>
+          <li><span class="ok">✓</span> Analytics básico</li>
+          <li class="dim"><span class="no">✗</span> Temas exclusivos</li>
+          <li class="dim"><span class="no">✗</span> Analytics avançado</li>
+        </ul>
+        <a href="/accounts/signup/" class="btn btn-outline" style="justify-content:center;">Começar grátis</a>
+      </div>
+      <div class="plan plan-pro reveal delay-1">
+        <div class="plan-badge">✦ MAIS POPULAR</div>
+        <div class="plan-name">Pro</div>
+        <div class="plan-price">R$ 29<span>/mês</span></div>
+        <div class="plan-sub">Pix · Cancele quando quiser</div>
+        <ul>
+          <li><span style="color:#A78BFA">✓</span> Links ilimitados</li>
+          <li><span style="color:#A78BFA">✓</span> 10 temas exclusivos Web3</li>
+          <li><span style="color:#A78BFA">✓</span> Analytics avançado (90 dias)</li>
+          <li><span style="color:#A78BFA">✓</span> Domínio customizado</li>
+          <li><span style="color:#A78BFA">✓</span> Blocos YouTube e Spotify</li>
+        </ul>
+        <a href="/accounts/signup/" class="btn btn-primary" style="justify-content:center;">Assinar Pro — R$ 29/mês ✦</a>
+        <p style="text-align:center;font-size:0.75rem;color:rgba(255,255,255,0.25);margin-top:10px;">Pague pelo Pix • Ativação imediata</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════
+     HISTÓRIA
+══════════════════════════════════════ -->
+<section class="section" id="story">
+  <div class="wrap-sm">
+    <div class="section-head reveal">
+      <div class="eyebrow">Nossa história</div>
+      <h2>Feito por <span class="grad">uma pessoa</span>,<br>para milhões de criadores</h2>
+    </div>
+    <div class="story-card reveal">
+      <div>
+        <div class="story-avatar">B</div>
+        <div class="story-name">Bueno</div>
+        <div class="story-role">Fundador & Dev</div>
+      </div>
+      <div class="story-text">
+        <p>Era mais uma noite de um dev brasileiro olhando para o perfil do Instagram e pensando: <em>"por que minha página bio parece tão genérica?"</em></p>
+        <p>Formado em ADS e desenvolvedor full stack, sabia que tinha algo errado quando a única opção era pagar em dólar, sem entender quais links realmente interessavam ao público.</p>
+        <p>Então decidi construir do zero. Sozinho. Com todo o cuidado de quem é criador <em>e</em> desenvolvedor ao mesmo tempo. O LumeBio nasceu da vontade simples de oferecer uma ferramenta honesta — bonita, inteligente e com preço justo.</p>
+        <p class="story-highlight">Porque criadores brasileiros merecem ferramentas feitas para eles. Em reais. Com dados de verdade. Sem enrolação.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════
+     FAQ
+══════════════════════════════════════ -->
+<section class="section section-alt" id="faq">
+  <div class="wrap-sm">
+    <div class="section-head reveal">
+      <div class="eyebrow">FAQ</div>
+      <h2>Perguntas <span class="grad">frequentes</span></h2>
+    </div>
+    <div class="reveal">
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)"><span>Preciso de cartão de crédito para começar?</span><span class="icon">+</span></button>
+        <div class="faq-a">O plano Free é realmente gratuito para sempre, sem cartão. O upgrade para Pro é feito via Pix em Reais, sem precisar de cartão.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)"><span>Posso cancelar quando quiser?</span><span class="icon">+</span></button>
+        <div class="faq-a">Sim, sem burocracia. Você cancela com um clique no painel e não é cobrado no mês seguinte. Sem multas, sem fidelidade mínima.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)"><span>Como funciona a assinatura mensal?</span><span class="icon">+</span></button>
+        <div class="faq-a">A cada mês você recebe um Pix para renovar. Ao pagar, o plano Pro é ativado automaticamente por mais 30 dias. Simples e transparente.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)"><span>Os dados dos meus visitantes ficam seguros?</span><span class="icon">+</span></button>
+        <div class="faq-a">Completamente. Seguimos a LGPD — IPs anonimizados, dados coletados apenas com consentimento explícito e nunca vendemos informações a terceiros.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)"><span>Qual a diferença do LumeBio para o Linktree?</span><span class="icon">+</span></button>
+        <div class="faq-a">Somos brasileiros para brasileiros: preço em Reais, Pix, LGPD-compliant e design exclusivo Web3. Nossa analytics é muito mais detalhada e acionável.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════
+     CTA FINAL
+══════════════════════════════════════ -->
+<section class="section">
+  <div class="wrap-sm reveal">
+    <div class="cta-box">
+      <div class="eyebrow" style="margin-bottom:14px;">Comece agora</div>
+      <h2>Sua página bio merece<br><span class="grad">brilhar de verdade</span></h2>
+      <p>Crie grátis em menos de 1 minuto. Sem cartão. Sem complicação.</p>
+      <a href="/accounts/signup/" class="btn btn-primary btn-lg">Criar minha página agora →</a>
+      <p style="font-size:0.78rem;color:rgba(255,255,255,0.2);margin-top:14px;">Já tem conta? <a href="/accounts/login/" style="color:rgba(167,139,250,0.6);">Entrar</a></p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════
+     FOOTER
+══════════════════════════════════════ -->
+<footer>
+  <div class="wrap">
+    <div class="footer-inner">
+      <div>
+        <a href="/" class="footer-logo">Lume<span class="dot">Bio</span></a>
+        <p class="footer-tagline">Feito com 💜 por um dev brasileiro<br>para criadores brasileiros.</p>
+      </div>
+      <div class="footer-cols">
+        <div class="footer-col">
+          <h4>Produto</h4>
+          <a href="#features">Funcionalidades</a>
+          <a href="#pricing">Preços</a>
+          <a href="/accounts/signup/">Criar conta</a>
+        </div>
+        <div class="footer-col">
+          <h4>Legal</h4>
+          <a href="/privacy/">Privacidade</a>
+          <a href="/privacy/">LGPD</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 LumeBio. Feito no Brasil 🇧🇷</p>
+      <p>Construído por Bueno — ADS & Full Stack Dev</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+// Partículas
+const C = document.getElementById('cvs'), cx = C.getContext('2d');
+let P = [];
+function resize(){ C.width = innerWidth; C.height = innerHeight; }
+resize(); addEventListener('resize', resize);
+for(let i=0;i<70;i++) P.push({x:Math.random()*innerWidth,y:Math.random()*innerHeight,vx:(Math.random()-.5)*.25,vy:(Math.random()-.5)*.25,s:Math.random()*1.2+.4,c:Math.random()>.5?'#7C3AED':'#2563EB'});
+(function draw(){
+  cx.clearRect(0,0,C.width,C.height);
+  P.forEach(p=>{
+    cx.beginPath(); cx.arc(p.x,p.y,p.s,0,Math.PI*2);
+    cx.fillStyle=p.c+'55'; cx.fill();
+    p.x+=p.vx; p.y+=p.vy;
+    if(p.x<0)p.x=C.width; if(p.x>C.width)p.x=0;
+    if(p.y<0)p.y=C.height; if(p.y>C.height)p.y=0;
+  });
+  for(let i=0;i<P.length;i++) for(let j=i+1;j<P.length;j++){
+    const dx=P[i].x-P[j].x, dy=P[i].y-P[j].y, d=Math.sqrt(dx*dx+dy*dy);
+    if(d<90){ cx.beginPath(); cx.moveTo(P[i].x,P[i].y); cx.lineTo(P[j].x,P[j].y); cx.strokeStyle=`rgba(124,58,237,${.06*(1-d/90)})`; cx.lineWidth=.5; cx.stroke(); }
+  }
+  requestAnimationFrame(draw);
+})();
+
+// Float card
+let t=0;
+const bc=document.getElementById('bio-card'), f1=document.getElementById('fb1'), f2=document.getElementById('fb2');
+(function fl(){ t+=.018;
+  if(bc) bc.style.transform=`translateY(${Math.sin(t)*7}px)`;
+  if(f1) f1.style.transform=`translateY(${Math.sin(t+1)*5}px)`;
+  if(f2) f2.style.transform=`translateY(${Math.cos(t)*4}px)`;
+  requestAnimationFrame(fl);
+})();
+
+// Contadores
+function count(el, n, suf){ let v=0; const s=n/(1400/16);
+  const r=setInterval(()=>{ v=Math.min(v+s,n); el.textContent=Math.floor(v)+suf; if(v>=n)clearInterval(r); },16); }
+setTimeout(()=>{
+  count(document.getElementById('cv'),247,'');
+  count(document.getElementById('cc'),89,'');
+  count(document.getElementById('ck'),36,'%');
+},600);
+
+// Scroll reveal
+const obs=new IntersectionObserver(e=>e.forEach(x=>{ if(x.isIntersecting)x.target.classList.add('on'); }),{threshold:.1});
+document.querySelectorAll('.reveal').forEach(e=>obs.observe(e));
+
+// Navbar
+addEventListener('scroll',()=>{ document.getElementById('nav').classList.toggle('solid',scrollY>40); });
+
+// FAQ
+function toggleFaq(btn){
+  const a=btn.nextElementSibling, open=a.classList.contains('open');
+  document.querySelectorAll('.faq-a.open').forEach(x=>{ x.classList.remove('open'); x.previousElementSibling.classList.remove('open'); });
+  if(!open){ a.classList.add('open'); btn.classList.add('open'); }
+}
+</script>
+
+</body>
+</html>

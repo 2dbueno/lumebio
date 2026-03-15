@@ -6,68 +6,65 @@
 {% block content %}
 <div class="min-h-screen" style="background: radial-gradient(ellipse at 50% 0%, rgba(124,58,237,0.12) 0%, transparent 60%), #0a0a14;">
 
-    <!-- Navbar -->
-    <nav class="border-b border-white/5 px-6 py-4">
-        <div class="max-w-6xl mx-auto flex items-center justify-between">
-            <div class="flex items-center gap-2">
-                <div class="w-8 h-8 rounded-lg bg-linear-to-br from-violet-500 to-blue-500 flex items-center justify-center">
-                    <span class="text-white font-bold text-sm">L</span>
-                </div>
-                <span class="font-bold text-white">LumeBio</span>
-            </div>
-            <div class="flex items-center gap-4">
-                <a href="{% url 'analytics:index' %}"
-                   class="text-sm text-gray-400 hover:text-white transition flex items-center gap-1">
-                    📊 Analytics
-                </a>
-                <a href="/{{ profile.slug }}/" target="_blank"
-                   class="text-sm text-gray-400 hover:text-white transition flex items-center gap-1">
-                    🔗 lumebio.com/{{ profile.slug }}
-                </a>
-                <a href="{% url 'account_logout' %}"
-                   class="text-sm text-gray-500 hover:text-gray-300 transition">Sair</a>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Main -->
     <main class="max-w-6xl mx-auto px-6 py-10">
 
         <!-- Header -->
-        <div class="mb-10 flex items-center justify-between">
+        <div class="mb-10 flex flex-wrap items-center justify-between gap-4">
             <div>
                 <h1 class="text-3xl font-bold text-white mb-1">
                     Olá, {{ profile.display_name|default:user.email|truncatechars:25 }} 👋
                 </h1>
-                <p class="text-gray-400">Gerencie sua página bio e acompanhe seu crescimento.</p>
+                <p class="text-white/40">Gerencie sua página bio e acompanhe seu crescimento.</p>
             </div>
-            <a href="{% url 'page_edit' %}"
-               class="px-4 py-2 rounded-xl bg-violet-600/20 border border-violet-500/20
-                      text-violet-300 text-sm font-medium hover:bg-violet-600/30 transition">
-                ⚙️ Editar página
-            </a>
+            <div class="flex items-center gap-3">
+                <a href="/{{ profile.slug }}/" target="_blank"
+                   class="px-4 py-2 rounded-xl bg-white/5 border border-white/10
+                          text-white/60 text-sm hover:text-white hover:bg-white/10 transition">
+                    🔗 /{{ profile.slug }}
+                </a>
+                <a href="{% url 'page_edit' %}"
+                   class="px-4 py-2 rounded-xl bg-violet-600/20 border border-violet-500/20
+                          text-violet-300 text-sm font-medium hover:bg-violet-600/30 transition">
+                    ⚙️ Editar página
+                </a>
+            </div>
         </div>
 
         <!-- Stats -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
             <div class="glass rounded-2xl p-6">
-                <p class="text-gray-400 text-sm mb-1">Links ativos</p>
+                <p class="text-white/40 text-sm mb-1">Links ativos</p>
                 <p class="text-3xl font-bold text-white">{{ blocks|length }}</p>
-                <p class="text-xs text-gray-600 mt-1">blocos na sua página</p>
+                <p class="text-xs text-white/20 mt-1">blocos na sua página</p>
             </div>
             <div class="glass rounded-2xl p-6">
-                <p class="text-gray-400 text-sm mb-1">Cliques totais</p>
+                <p class="text-white/40 text-sm mb-1">Cliques totais</p>
                 <p class="text-3xl font-bold text-white">{{ total_clicks }}</p>
-                <p class="text-xs text-gray-600 mt-1">em todos os links</p>
+                <p class="text-xs text-white/20 mt-1">em todos os links</p>
             </div>
             <div class="glass rounded-2xl p-6">
-                <p class="text-gray-400 text-sm mb-1">Status</p>
+                <p class="text-white/40 text-sm mb-1">Status</p>
                 <p class="text-3xl font-bold {% if page.is_published %}text-green-400{% else %}text-red-400{% endif %}">
                     {% if page.is_published %}Público{% else %}Oculto{% endif %}
                 </p>
-                <p class="text-xs text-gray-600 mt-1">visibilidade da página</p>
+                <p class="text-xs text-white/20 mt-1">visibilidade da página</p>
             </div>
         </div>
+
+        <!-- Plano — só aparece se for Free -->
+        {% if not profile.is_pro %}
+        <div class="glass rounded-2xl p-5 mb-6 flex flex-wrap items-center justify-between gap-4"
+             style="border-color: rgba(124,58,237,0.3);">
+            <div>
+                <p class="text-sm font-semibold text-white">Você está no plano Free</p>
+                <p class="text-xs text-white/40 mt-0.5">Faça upgrade para links ilimitados, temas exclusivos e analytics avançado.</p>
+            </div>
+            <a href="{% url 'billing:pricing' %}"
+               class="px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold transition">
+                Ver planos ✦
+            </a>
+        </div>
+        {% endif %}
 
         <!-- Blocos -->
         <div class="glass rounded-2xl p-6">
@@ -86,7 +83,7 @@
                             {% if block.is_active %}border-white/10 bg-white/5{% else %}border-white/5 bg-white/2 opacity-50{% endif %}"
                      data-id="{{ block.id }}">
                     <div class="flex items-center gap-3">
-                        <span class="text-gray-600 hover:text-gray-400 cursor-grab select-none px-1"
+                        <span class="text-white/20 hover:text-white/60 cursor-grab select-none px-1"
                               data-handle>⠿</span>
                         <span class="text-lg">
                             {% if block.block_type == 'link' %}🔗
@@ -97,12 +94,12 @@
                         </span>
                         <div>
                             <p class="text-white text-sm font-medium">{{ block.title|default:"Sem título" }}</p>
-                            <p class="text-gray-500 text-xs">{{ block.get_block_type_display }} · {{ block.clicks }} cliques</p>
+                            <p class="text-white/30 text-xs">{{ block.get_block_type_display }} · {{ block.clicks }} cliques</p>
                         </div>
                     </div>
                     <div class="flex items-center gap-2">
                         <a href="{% url 'block_toggle' block.id %}"
-                           class="text-xs px-3 py-1 rounded-lg border border-white/10 text-gray-400 hover:text-white transition">
+                           class="text-xs px-3 py-1 rounded-lg border border-white/10 text-white/40 hover:text-white transition">
                             {% if block.is_active %}Ocultar{% else %}Ativar{% endif %}
                         </a>
                         <a href="{% url 'block_edit' block.id %}"
@@ -124,7 +121,7 @@
             {% else %}
             <div class="text-center py-12">
                 <p class="text-4xl mb-3">🧱</p>
-                <p class="text-gray-400 mb-4">Nenhum bloco ainda. Crie seu primeiro link!</p>
+                <p class="text-white/40 mb-4">Nenhum bloco ainda. Crie seu primeiro link!</p>
                 <a href="{% url 'block_create' %}"
                    class="px-6 py-2.5 rounded-xl bg-violet-600 text-white text-sm font-medium hover:bg-violet-700 transition">
                     + Criar bloco
@@ -136,7 +133,6 @@
     </main>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
 <script>
 const list = document.getElementById('blocks-list');
 if (list) {
@@ -147,7 +143,6 @@ if (list) {
         onEnd: function () {
             const order = [...list.querySelectorAll('[data-id]')]
                 .map(el => el.dataset.id);
-
             fetch("{% url 'block_reorder' %}", {
                 method: 'POST',
                 headers: {
