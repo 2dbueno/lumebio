@@ -48,32 +48,34 @@ def block_create(request):
         )
         messages.success(request, 'Bloco criado!')
         return redirect('dashboard')
-    return render(request, 'dashboard/block_form.html', {'action': 'Criar'})
+    # 'blk': None deixa claro ao template que é criação (sem dados)
+    return render(request, 'dashboard/block_form.html', {'action': 'Criar', 'blk': None})
 
 
 @login_required
 def block_edit(request, block_id):
     page = get_object_or_404(Page, user=request.user)
-    block = get_object_or_404(Block, id=block_id, page=page)
+    blk = get_object_or_404(Block, id=block_id, page=page)
     if request.method == 'POST':
-        block.block_type = request.POST.get('block_type', block.block_type)
-        block.title = request.POST.get('title', block.title)
-        block.url = request.POST.get('url', block.url)
-        block.description = request.POST.get('description', block.description)
-        block.icon = request.POST.get('icon', block.icon)
-        block.is_active = request.POST.get('is_active') == 'on'
-        block.save()
+        blk.block_type  = request.POST.get('block_type', blk.block_type)
+        blk.title       = request.POST.get('title', blk.title)
+        blk.url         = request.POST.get('url', blk.url)
+        blk.description = request.POST.get('description', blk.description)
+        blk.icon        = request.POST.get('icon', blk.icon)
+        blk.is_active   = request.POST.get('is_active') == 'on'
+        blk.save()
         messages.success(request, 'Bloco atualizado!')
         return redirect('dashboard')
-    return render(request, 'dashboard/block_form.html', {'block': block, 'action': 'Editar'})
+    # variável renomeada para 'blk' — 'block' é palavra reservada nos templates Django
+    return render(request, 'dashboard/block_form.html', {'blk': blk, 'action': 'Editar'})
 
 
 @login_required
 def block_delete(request, block_id):
     page = get_object_or_404(Page, user=request.user)
-    block = get_object_or_404(Block, id=block_id, page=page)
+    blk = get_object_or_404(Block, id=block_id, page=page)
     if request.method == 'POST':
-        block.delete()
+        blk.delete()
         messages.success(request, 'Bloco removido!')
     return redirect('dashboard')
 
@@ -81,9 +83,9 @@ def block_delete(request, block_id):
 @login_required
 def block_toggle(request, block_id):
     page = get_object_or_404(Page, user=request.user)
-    block = get_object_or_404(Block, id=block_id, page=page)
-    block.is_active = not block.is_active
-    block.save(update_fields=['is_active'])
+    blk = get_object_or_404(Block, id=block_id, page=page)
+    blk.is_active = not blk.is_active
+    blk.save(update_fields=['is_active'])
     return redirect('dashboard')
 
 @login_required
@@ -92,7 +94,7 @@ def block_reorder(request):
     page = get_object_or_404(Page, user=request.user)
     try:
         data = json.loads(request.body)
-        order = data.get('order', [])  # lista de IDs na nova ordem
+        order = data.get('order', [])
         for index, block_id in enumerate(order):
             page.blocks.filter(id=block_id).update(order=index)
         return JsonResponse({'status': 'ok'})

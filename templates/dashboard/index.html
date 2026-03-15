@@ -86,7 +86,9 @@
                         <span class="text-white/20 hover:text-white/60 cursor-grab select-none px-1"
                               data-handle>⠿</span>
                         <span class="text-lg">
-                            {% if block.block_type == 'link' %}🔗
+                            {% if block.icon %}
+                                {{ block.icon }}
+                            {% elif block.block_type == 'link' %}🔗
                             {% elif block.block_type == 'social' %}📱
                             {% elif block.block_type == 'header' %}📌
                             {% elif block.block_type == 'divider' %}➖

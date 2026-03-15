@@ -19,52 +19,106 @@
         <form method="post" class="glass rounded-2xl p-6 flex flex-col gap-4">
             {% csrf_token %}
 
+            <!-- Tipo -->
             <div>
                 <label class="text-sm text-gray-400 mb-1 block">Tipo</label>
-                <select name="block_type" x-data x-model="type"
+                <select name="block_type"
                         class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5
-                               text-white text-sm focus:outline-none focus:border-violet-500 transition">
-                    <option value="link"    {% if block.block_type == 'link' %}selected{% endif %}>🔗 Link</option>
-                    <option value="social"  {% if block.block_type == 'social' %}selected{% endif %}>📱 Rede Social</option>
-                    <option value="header"  {% if block.block_type == 'header' %}selected{% endif %}>📌 Cabeçalho</option>
-                    <option value="divider" {% if block.block_type == 'divider' %}selected{% endif %}>➖ Divisor</option>
-                    <option value="text"    {% if block.block_type == 'text' %}selected{% endif %}>📝 Texto</option>
+                            text-white text-sm focus:outline-none focus:border-violet-500 transition">
+                    <option value="link"    style="background:#1a1a2e; color:#fff;" {% if blk.block_type == 'link' %}selected{% endif %}>🔗 Link</option>
+                    <option value="social"  style="background:#1a1a2e; color:#fff;" {% if blk.block_type == 'social' %}selected{% endif %}>📱 Rede Social</option>
+                    <option value="header"  style="background:#1a1a2e; color:#fff;" {% if blk.block_type == 'header' %}selected{% endif %}>📌 Cabeçalho</option>
+                    <option value="divider" style="background:#1a1a2e; color:#fff;" {% if blk.block_type == 'divider' %}selected{% endif %}>➖ Divisor</option>
+                    <option value="text"    style="background:#1a1a2e; color:#fff;" {% if blk.block_type == 'text' %}selected{% endif %}>📝 Texto</option>
                 </select>
             </div>
 
+            <!-- Título -->
             <div>
                 <label class="text-sm text-gray-400 mb-1 block">Título</label>
-                <input type="text" name="title" value="{{ block.title }}"
+                <input type="text" name="title" value="{{ blk.title|default:'' }}"
                        placeholder="Ex: Meu Instagram"
                        class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5
                               text-white text-sm focus:outline-none focus:border-violet-500 transition">
             </div>
 
+            <!-- URL -->
             <div>
                 <label class="text-sm text-gray-400 mb-1 block">URL</label>
-                <input type="url" name="url" value="{{ block.url }}"
+                <input type="url" name="url" value="{{ blk.url|default:'' }}"
                        placeholder="https://..."
                        class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5
                               text-white text-sm focus:outline-none focus:border-violet-500 transition">
             </div>
 
+            <!-- Descrição -->
             <div>
-                <label class="text-sm text-gray-400 mb-1 block">Descrição <span class="text-gray-600">(opcional)</span></label>
-                <input type="text" name="description" value="{{ block.description }}"
+                <label class="text-sm text-gray-400 mb-1 block">
+                    Descrição <span class="text-gray-600">(opcional)</span>
+                </label>
+                <input type="text" name="description" value="{{ blk.description|default:'' }}"
                        placeholder="Texto curto abaixo do título"
                        class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5
                               text-white text-sm focus:outline-none focus:border-violet-500 transition">
             </div>
 
+            <!-- Ícone (emoji picker) -->
             <div>
-                <label class="text-sm text-gray-400 mb-1 block">Ícone <span class="text-gray-600">(emoji ou texto)</span></label>
-                <input type="text" name="icon" value="{{ block.icon }}"
-                       placeholder="🚀"
-                       class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5
-                              text-white text-sm focus:outline-none focus:border-violet-500 transition">
+                <label class="text-sm text-gray-400 mb-1 block">Ícone</label>
+
+                <input type="hidden" name="icon" id="icon-value" value="{{ blk.icon|default:'' }}">
+
+                <div class="relative" id="emoji-picker-wrapper">
+                    <button type="button" id="emoji-trigger"
+                            class="flex items-center gap-3 w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5
+                                   text-white text-sm hover:border-violet-500 focus:outline-none focus:border-violet-500 transition text-left">
+                        <span id="emoji-display" class="text-xl leading-none">
+                            {% if blk.icon %}{{ blk.icon }}{% else %}😀{% endif %}
+                        </span>
+                        <span class="text-white/40 text-xs">Clique para escolher um emoji</span>
+                        <span class="ml-auto text-white/30 text-xs">▾</span>
+                    </button>
+
+                    <div id="emoji-grid"
+                         class="hidden absolute z-50 left-0 right-0 mt-2 p-3 rounded-2xl border border-white/10
+                                shadow-2xl overflow-y-auto"
+                         style="background: #1a1a2e; max-height: 260px;">
+
+                        <input type="text" id="emoji-search" placeholder="Buscar emoji..."
+                               class="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 mb-3
+                                      text-white text-xs focus:outline-none focus:border-violet-500 transition">
+
+                        <div id="emoji-categories" class="flex gap-2 mb-3 flex-wrap">
+                            <button type="button" data-cat="popular"
+                                    class="emoji-cat-btn text-xs px-3 py-1 rounded-lg border border-violet-500/50
+                                           bg-violet-500/20 text-violet-300 transition">⭐ Popular</button>
+                            <button type="button" data-cat="smileys"
+                                    class="emoji-cat-btn text-xs px-3 py-1 rounded-lg border border-white/10
+                                           text-white/40 hover:text-white transition">😀 Rostos</button>
+                            <button type="button" data-cat="objects"
+                                    class="emoji-cat-btn text-xs px-3 py-1 rounded-lg border border-white/10
+                                           text-white/40 hover:text-white transition">💡 Objetos</button>
+                            <button type="button" data-cat="symbols"
+                                    class="emoji-cat-btn text-xs px-3 py-1 rounded-lg border border-white/10
+                                           text-white/40 hover:text-white transition">🔣 Símbolos</button>
+                            <button type="button" data-cat="nature"
+                                    class="emoji-cat-btn text-xs px-3 py-1 rounded-lg border border-white/10
+                                           text-white/40 hover:text-white transition">🌿 Natureza</button>
+                        </div>
+
+                        <div id="emoji-list" class="grid gap-1" style="grid-template-columns: repeat(auto-fill, minmax(36px, 1fr));">
+                        </div>
+
+                        <button type="button" id="clear-icon"
+                                class="w-full mt-3 py-1.5 text-xs text-white/30 hover:text-white/60 transition border-t border-white/5">
+                            ✕ Remover ícone
+                        </button>
+                    </div>
+                </div>
             </div>
 
-            {% if block %}
+            <!-- Toggle ativo (só no edit) -->
+            {% if blk %}
             <div class="flex items-center justify-between py-2">
                 <div>
                     <p class="text-white text-sm font-medium">Bloco ativo</p>
@@ -72,7 +126,7 @@
                 </div>
                 <label class="relative inline-flex items-center cursor-pointer">
                     <input type="checkbox" name="is_active" class="sr-only peer"
-                           {% if block.is_active %}checked{% endif %}>
+                           {% if blk.is_active %}checked{% endif %}>
                     <div class="w-11 h-6 bg-white/10 peer-checked:bg-violet-600 rounded-full
                                 transition after:content-[''] after:absolute after:top-0.5 after:left-0.5
                                  after:bg-white after:rounded-full after:h-5 after:w-5
@@ -89,4 +143,87 @@
         </form>
     </main>
 </div>
+
+<script>
+const EMOJIS = {
+    popular: ['🔗','📱','📌','➖','📝','🚀','⭐','💡','🎯','📊','💼','🔔','📧','🌐','💬','🎁','🛒','📅','📞','❤️','🔥','✅','⚡','🎵','📸'],
+    smileys: ['😀','😊','😎','🥳','🤩','😍','🤔','😴','😂','🥹','😇','🙌','👏','💪','🫶','🙏','✌️','👍','🎉','💯','🔮','👑','🦄','🤖','👻'],
+    objects: ['💡','📱','💻','🖥️','⌨️','🖱️','📷','🎥','🎙️','📻','📺','📡','🔭','🔬','💊','🏆','🎯','🎮','🕹️','📚','📖','✏️','🖊️','📋','📁'],
+    symbols: ['❤️','🧡','💛','💚','💙','💜','🖤','🤍','♾️','✅','❌','⭐','🌟','💫','✨','🔥','💧','🌊','🌈','☀️','🌙','⚡','❄️','🎵','🎶'],
+    nature:  ['🌿','🌱','🌳','🌸','🌺','🍀','🍁','🍂','🌻','🌹','🌷','🌾','🍃','🦋','🐝','🐾','🦁','🐬','🦅','🌍','🏔️','🏝️','🌋','🌄','🌅'],
+};
+
+const trigger  = document.getElementById('emoji-trigger');
+const grid     = document.getElementById('emoji-grid');
+const display  = document.getElementById('emoji-display');
+const hidden   = document.getElementById('icon-value');
+const search   = document.getElementById('emoji-search');
+const list     = document.getElementById('emoji-list');
+const catBtns  = document.querySelectorAll('.emoji-cat-btn');
+const clearBtn = document.getElementById('clear-icon');
+
+let currentCat = 'popular';
+
+function renderEmojis(emojis) {
+    list.innerHTML = emojis.map(e =>
+        `<button type="button" class="text-xl w-9 h-9 flex items-center justify-center
+                 rounded-lg hover:bg-white/10 transition" data-emoji="${e}">${e}</button>`
+    ).join('');
+    list.querySelectorAll('[data-emoji]').forEach(btn => {
+        btn.addEventListener('click', () => selectEmoji(btn.dataset.emoji));
+    });
+}
+
+function selectEmoji(emoji) {
+    display.textContent = emoji;
+    hidden.value = emoji;
+    grid.classList.add('hidden');
+}
+
+function switchCat(cat) {
+    currentCat = cat;
+    search.value = '';
+    renderEmojis(EMOJIS[cat]);
+    catBtns.forEach(b => {
+        const active = b.dataset.cat === cat;
+        b.className = `emoji-cat-btn text-xs px-3 py-1 rounded-lg border transition ${
+            active
+            ? 'border-violet-500/50 bg-violet-500/20 text-violet-300'
+            : 'border-white/10 text-white/40 hover:text-white'
+        }`;
+    });
+}
+
+catBtns.forEach(b => b.addEventListener('click', () => switchCat(b.dataset.cat)));
+
+search.addEventListener('input', () => {
+    const q = search.value.trim();
+    if (!q) { renderEmojis(EMOJIS[currentCat]); return; }
+    renderEmojis(Object.values(EMOJIS).flat());
+});
+
+trigger.addEventListener('click', () => {
+    grid.classList.toggle('hidden');
+    if (!grid.classList.contains('hidden')) {
+        renderEmojis(EMOJIS[currentCat]);
+        search.focus();
+    }
+});
+
+clearBtn.addEventListener('click', () => {
+    display.textContent = '😀';
+    hidden.value = '';
+    grid.classList.add('hidden');
+});
+
+document.addEventListener('click', e => {
+    if (!document.getElementById('emoji-picker-wrapper').contains(e.target)) {
+        grid.classList.add('hidden');
+    }
+});
+
+// Carrega o emoji salvo ao abrir em modo edição
+const initial = hidden.value;
+if (initial) display.textContent = initial;
+</script>
 {% endblock %}
