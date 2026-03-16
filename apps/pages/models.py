@@ -159,11 +159,14 @@ class Block(models.Model):
 
 
 class LinkClick(models.Model):
-    block = models.ForeignKey(Block, on_delete=models.CASCADE, related_name='link_clicks')
+    block      = models.ForeignKey(Block, on_delete=models.CASCADE, related_name='link_clicks')
     clicked_at = models.DateTimeField(auto_now_add=True)
     ip_address = models.GenericIPAddressField(null=True, blank=True)
-    user_agent = models.TextField(blank=True)
-    # TextField em vez de URLField — referer do browser nem sempre é URL válida
+    device_type = models.CharField(
+        max_length=10,
+        choices=[('mobile', 'Mobile'), ('tablet', 'Tablet'), ('desktop', 'Desktop')],
+        default='desktop',
+    )
     referer = models.TextField(blank=True)
 
     class Meta:
