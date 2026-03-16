@@ -34,6 +34,8 @@ LOCAL_APPS = [
     'apps.analytics.apps.AnalyticsConfig',
     'apps.dashboard',
     'apps.billing',
+    'apps.notifications.apps.NotificationsConfig',
+    'apps.themes.apps.ThemesConfig',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -167,7 +169,6 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 # ── AbacatePay ────────────────────────────────────────────────────────────────
 ABACATEPAY_API_KEY = os.environ.get('ABACATEPAY_API_KEY', '')
 ABACATEPAY_WEBHOOK_SECRET = os.environ.get('ABACATEPAY_WEBHOOK_SECRET', '')
-SITE_URL = os.environ.get('SITE_URL', 'http://localhost:8000')
  
 # URL base do site — usada para montar return_url e completion_url no checkout
 # Em dev: http://localhost:8000 | Em prod: https://dominio.com

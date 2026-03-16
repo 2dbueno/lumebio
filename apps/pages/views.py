@@ -1,7 +1,9 @@
 ﻿from django.shortcuts import render, get_object_or_404, redirect
+from django.db.models import F
 from apps.accounts.models import Profile
+from apps.analytics.tasks import record_page_view
+from apps.analytics.utils import anonymize_ip
 from .models import Page, Block, LinkClick
-
 
 def get_client_ip(request):
     """
@@ -23,7 +25,6 @@ def public_page(request, username):
     # Captura PageView assíncrono se visitante aceitou consentimento LGPD
     consent = request.COOKIES.get('biolink_consent')
     if consent == 'accepted':
-        from apps.analytics.tasks import record_page_view
         record_page_view.delay(
             page_id=page.id,
             ip=get_client_ip(request),
@@ -43,14 +44,13 @@ def block_redirect(request, block_id):
     consent = request.COOKIES.get('biolink_consent')
 
     if consent == 'accepted':
-        from apps.analytics.utils import anonymize_ip
         LinkClick.objects.create(
             block=block,
-            ip_address=anonymize_ip(get_client_ip(request)),  # IP anonimizado (LGPD)
+            ip_address=anonymize_ip(get_client_ip(request)),
             user_agent=request.META.get('HTTP_USER_AGENT', ''),
             referer=request.META.get('HTTP_REFERER', ''),
         )
-        block.clicks += 1
-        block.save(update_fields=['clicks'])
+        # F() expression: UPDATE atômico no banco, sem race condition
+        Block.objects.filter(id=block.id).update(clicks=F('clicks') + 1)
 
     return redirect(block.url)

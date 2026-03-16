@@ -144,19 +144,41 @@ def export_csv(request):
         .order_by('-clicked_at')
     )
 
+    # Monta índice ip → device_type a partir das PageViews do período.
+    # Correlação por proximidade: melhor estimativa disponível sem alterar o model.
+    # BK-45 adicionará device_type diretamente ao LinkClick, tornando isso desnecessário.
+    page_views = (
+        PageView.objects
+        .filter(page=page, viewed_at__gte=since)
+        .values('ip_anon', 'device_type', 'viewed_at')
+    )
+    # Para cada IP, guarda a PageView mais recente — critério simples e eficiente
+    device_by_ip: dict[str, str] = {}
+    for pv in page_views:
+        ip = pv['ip_anon']
+        if ip not in device_by_ip or pv['viewed_at'] > device_by_ip[ip]['viewed_at']:
+            device_by_ip[ip] = pv
+
     response = HttpResponse(content_type='text/csv; charset=utf-8')
-    response['Content-Disposition'] = f'attachment; filename="analytics_{page.title}_{period}d.csv"'
+    response['Content-Disposition'] = (
+        f'attachment; filename="analytics_{page.title}_{period}d.csv"'
+    )
     response.write('\ufeff')  # BOM para Excel reconhecer UTF-8
 
     writer = csv.writer(response)
     writer.writerow(['Data/Hora', 'Link', 'Destino', 'Dispositivo Estimado', 'Origem'])
 
     for click in clicks:
+        pv_data = device_by_ip.get(click.ip_address)
+        device = pv_data['device_type'].capitalize() if pv_data else 'Desconhecido'
+
         writer.writerow([
-            click.clicked_at.astimezone(timezone.get_current_timezone()).strftime('%d/%m/%Y %H:%M'),
+            click.clicked_at.astimezone(
+                timezone.get_current_timezone()
+            ).strftime('%d/%m/%Y %H:%M'),
             click.block.title,
             click.block.url,
-            'Desktop',  # LinkClick não armazena device; está no PageView
+            device,
             click.referer or 'Acesso direto',
         ])
 

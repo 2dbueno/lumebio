@@ -1,5 +1,9 @@
-from celery import shared_task
 import logging
+from datetime import date, timedelta
+from celery import shared_task
+from django.utils import timezone
+from apps.billing.models import Invoice, Subscription
+from apps.billing.services import cancel_subscription, create_monthly_billing
 
 logger = logging.getLogger(__name__)
 
@@ -10,11 +14,6 @@ def charge_monthly_subscriptions():
     Cria cobranças mensais para todas as assinaturas ativas.
     Agendar via Celery Beat: dia 1 de cada mês às 09:00.
     """
-    from apps.billing.models import Subscription, Invoice
-    from apps.billing.services import create_monthly_billing
-    from django.utils import timezone
-    from datetime import date
-
     today = date.today()
     active_subs = Subscription.objects.filter(
         status=Subscription.STATUS_ACTIVE
@@ -22,7 +21,6 @@ def charge_monthly_subscriptions():
 
     resultados = []
     for sub in active_subs:
-        # Verifica se já foi cobrado esse mês
         already_billed = Invoice.objects.filter(
             subscription=sub,
             reference_month=today.replace(day=1),
@@ -35,7 +33,6 @@ def charge_monthly_subscriptions():
         try:
             result = create_monthly_billing(sub)
 
-            # Cria fatura pendente — será marcada como paga pelo webhook
             Invoice.objects.create(
                 subscription=sub,
                 abacate_billing_id=result['billing_id'],
@@ -45,7 +42,6 @@ def charge_monthly_subscriptions():
                 reference_month=today.replace(day=1),
             )
 
-            # Marca como past_due até o pagamento ser confirmado
             sub.status = Subscription.STATUS_PAST_DUE
             sub.save(update_fields=['status'])
 
@@ -65,11 +61,6 @@ def cancel_overdue_subscriptions():
     Cancela assinaturas com pagamento em atraso há mais de 7 dias.
     Agendar via Celery Beat: todo dia às 10:00.
     """
-    from apps.billing.models import Subscription, Invoice
-    from apps.billing.services import cancel_subscription
-    from django.utils import timezone
-    from datetime import timedelta
-
     cutoff = timezone.now() - timedelta(days=7)
 
     overdue_subs = Subscription.objects.filter(
@@ -83,4 +74,8 @@ def cancel_overdue_subscriptions():
         cancelados.append(sub.profile.slug)
         logger.warning(f'Assinatura cancelada por inadimplência: {sub.profile.slug}')
 
-    return f'Cancelados por inadimplência: {", ".join(cancelados)}' if cancelados else 'Nenhum cancelamento.'
+    return (
+        f'Cancelados por inadimplência: {", ".join(cancelados)}'
+        if cancelados
+        else 'Nenhum cancelamento.'
+    )
