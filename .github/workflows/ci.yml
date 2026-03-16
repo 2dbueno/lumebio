@@ -39,9 +39,14 @@ jobs:
       SECRET_KEY: ci-secret-key-nao-usar-em-producao
       DEBUG: "True"
       ALLOWED_HOSTS: localhost,127.0.0.1
-      DJANGO_SETTINGS_MODULE: config.settings.development
+      DJANGO_SETTINGS_MODULE: config.settings.testing
       DATABASE_URL: postgresql://lumebio:lumebio123@localhost:5432/lumebio_test
       REDIS_URL: redis://localhost:6379/0
+      POSTGRES_DB: lumebio_test
+      POSTGRES_USER: lumebio
+      POSTGRES_PASSWORD: lumebio123
+      POSTGRES_HOST: localhost
+      POSTGRES_PORT: "5432"
 
     steps:
       - name: Checkout código

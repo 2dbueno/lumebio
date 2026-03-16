@@ -1,23 +1,54 @@
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib import messages
-from apps.pages.models import Page, Block
 import json
+import logging
+
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
+
+from apps.pages.models import Block, Page
+
+logger = logging.getLogger(__name__)
+
+
+def _get_block_limit(profile):
+    """
+    Retorna o limite de blocos do plano do usuário.
+    Retorna None se o plano for ilimitado (Pro).
+    Usa fallback de 5 se o plano não existir no banco.
+    """
+    from apps.billing.models import Plan
+    try:
+        plan = Plan.objects.get(slug=profile.plan)
+        return plan.max_links  # None = ilimitado
+    except Plan.DoesNotExist:
+        logger.warning(f'Plano "{profile.plan}" não encontrado no banco para {profile.slug}. Usando fallback=5.')
+        return 5
+
 
 @login_required
 def dashboard(request):
     page = get_object_or_404(Page, user=request.user)
     blocks = page.blocks.all().order_by('order')
     total_clicks = sum(b.clicks for b in blocks)
+    profile = request.user.profile
+
+    plan_limit = _get_block_limit(profile)
+    block_count = len(blocks)  # já está em memória — não faz nova query
+    at_limit = plan_limit is not None and block_count >= plan_limit
+
     return render(request, 'dashboard/index.html', {
         'user': request.user,
-        'profile': request.user.profile,
+        'profile': profile,
         'page': page,
         'blocks': blocks,
         'total_clicks': total_clicks,
+        'plan_limit': plan_limit,
+        'block_count': block_count,
+        'at_limit': at_limit,
     })
+
 
 @login_required
 def page_edit(request):
@@ -36,6 +67,20 @@ def page_edit(request):
 @login_required
 def block_create(request):
     page = get_object_or_404(Page, user=request.user)
+    profile = request.user.profile
+
+    # BK-07: verifica limite do plano antes de qualquer coisa
+    plan_limit = _get_block_limit(profile)
+    current_count = page.blocks.count()
+
+    if plan_limit is not None and current_count >= plan_limit:
+        messages.error(
+            request,
+            f'Você atingiu o limite de {plan_limit} blocos do plano Free. '
+            f'Faça upgrade para adicionar links ilimitados.'
+        )
+        return redirect('dashboard')
+
     if request.method == 'POST':
         Block.objects.create(
             page=page,
@@ -44,11 +89,11 @@ def block_create(request):
             url=request.POST.get('url', ''),
             description=request.POST.get('description', ''),
             icon=request.POST.get('icon', ''),
-            order=page.blocks.count(),
+            order=current_count,
         )
         messages.success(request, 'Bloco criado!')
         return redirect('dashboard')
-    # 'blk': None deixa claro ao template que é criação (sem dados)
+
     return render(request, 'dashboard/block_form.html', {'action': 'Criar', 'blk': None})
 
 
@@ -66,7 +111,6 @@ def block_edit(request, block_id):
         blk.save()
         messages.success(request, 'Bloco atualizado!')
         return redirect('dashboard')
-    # variável renomeada para 'blk' — 'block' é palavra reservada nos templates Django
     return render(request, 'dashboard/block_form.html', {'blk': blk, 'action': 'Editar'})
 
 
@@ -87,6 +131,7 @@ def block_toggle(request, block_id):
     blk.is_active = not blk.is_active
     blk.save(update_fields=['is_active'])
     return redirect('dashboard')
+
 
 @login_required
 @require_POST

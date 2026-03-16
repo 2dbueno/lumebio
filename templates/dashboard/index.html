@@ -69,12 +69,40 @@
         <!-- Blocos -->
         <div class="glass rounded-2xl p-6">
             <div class="flex items-center justify-between mb-6">
-                <h2 class="text-lg font-semibold text-white">Seus blocos</h2>
+                <div>
+                    <h2 class="text-lg font-semibold text-white">Seus blocos</h2>
+                    {% if plan_limit %}
+                    <p class="text-xs text-white/30 mt-0.5">
+                        {{ block_count }} de {{ plan_limit }} blocos usados
+                    </p>
+                    {% endif %}
+                </div>
+                {% if at_limit %}
+                <a href="{% url 'billing:pricing' %}"
+                class="px-4 py-2 rounded-xl bg-red-500/20 border border-red-500/30
+                        text-red-400 text-sm font-medium hover:bg-red-500/30 transition">
+                    Limite atingido — Upgrade
+                </a>
+                {% else %}
                 <a href="{% url 'block_create' %}"
-                   class="px-4 py-2 rounded-xl bg-violet-600 text-white text-sm font-medium hover:bg-violet-700 transition">
+                class="px-4 py-2 rounded-xl bg-violet-600 text-white text-sm font-medium hover:bg-violet-700 transition">
                     + Novo bloco
                 </a>
+                {% endif %}
             </div>
+
+            {% if at_limit %}
+            <div class="rounded-xl p-4 mb-4"
+                style="background: rgba(220,38,38,0.08); border: 1px solid rgba(220,38,38,0.25);">
+                <p class="text-sm text-red-400">
+                    Você atingiu o limite de <strong>{{ plan_limit }} blocos</strong> do plano Free.
+                    <a href="{% url 'billing:pricing' %}" class="underline hover:text-red-300 ml-1">
+                        Faça upgrade para Pro
+                    </a>
+                    e adicione links ilimitados.
+                </p>
+            </div>
+            {% endif %}
 
             {% if blocks %}
             <div class="flex flex-col gap-3" id="blocks-list">
