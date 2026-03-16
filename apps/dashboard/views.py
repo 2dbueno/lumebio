@@ -53,16 +53,31 @@ def dashboard(request):
 @login_required
 def page_edit(request):
     page = get_object_or_404(Page, user=request.user)
+    profile = request.user.profile
+
     if request.method == 'POST':
+        requested_theme = request.POST.get('theme', page.theme)
+
+        # bloqueia tema Pro para usuário Free
+        if requested_theme in Page.PRO_THEMES and not profile.is_pro:
+            messages.error(
+                request,
+                'Este tema é exclusivo do plano Pro. Faça upgrade para utilizá-lo.'
+            )
+            return redirect('page_edit')
+
         page.title = request.POST.get('title', page.title)
         page.bio = request.POST.get('bio', page.bio)
-        page.theme = request.POST.get('theme', page.theme)
+        page.theme = requested_theme
         page.is_published = request.POST.get('is_published') == 'on'
         page.save()
         messages.success(request, 'Página atualizada!')
         return redirect('dashboard')
-    return render(request, 'dashboard/page_edit.html', {'page': page})
 
+    return render(request, 'dashboard/page_edit.html', {
+        'page': page,
+        'profile': profile,
+    })
 
 @login_required
 def block_create(request):

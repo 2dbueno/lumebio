@@ -44,45 +44,250 @@
 
                 <div>
                     <label class="text-sm text-gray-400 mb-2 block">Tema</label>
-                    <div class="grid grid-cols-3 gap-3">
+
+                    <!-- Temas Free -->
+                    <p class="text-xs text-white/30 uppercase tracking-wider mb-2">Grátis</p>
+                    <div class="grid grid-cols-3 gap-3 mb-4">
 
                         <label class="cursor-pointer">
                             <input type="radio" name="theme" value="neon-dark" class="sr-only peer"
-                                   {% if page.theme == 'neon-dark' %}checked{% endif %}>
+                                {% if page.theme == 'neon-dark' %}checked{% endif %}>
                             <div class="rounded-xl p-3 border-2 border-white/10 peer-checked:border-violet-500
                                         transition text-center peer-checked:bg-violet-500/10"
-                                 style="background: #0F0F1A;">
+                                style="background:#0F0F1A;">
                                 <div class="w-full h-8 rounded-lg mb-2"
-                                     style="background: linear-gradient(135deg, #7C3AED, #A78BFA);"></div>
+                                    style="background:linear-gradient(135deg,#7C3AED,#A78BFA);"></div>
                                 <span class="text-xs text-white">Neon Dark</span>
                             </div>
                         </label>
 
                         <label class="cursor-pointer">
                             <input type="radio" name="theme" value="cyber-blue" class="sr-only peer"
-                                   {% if page.theme == 'cyber-blue' %}checked{% endif %}>
+                                {% if page.theme == 'cyber-blue' %}checked{% endif %}>
                             <div class="rounded-xl p-3 border-2 border-white/10 peer-checked:border-blue-500
                                         transition text-center peer-checked:bg-blue-500/10"
-                                 style="background: #020B18;">
+                                style="background:#020B18;">
                                 <div class="w-full h-8 rounded-lg mb-2"
-                                     style="background: linear-gradient(135deg, #2563EB, #60A5FA);"></div>
+                                    style="background:linear-gradient(135deg,#2563EB,#60A5FA);"></div>
                                 <span class="text-xs text-white">Cyber Blue</span>
                             </div>
                         </label>
 
                         <label class="cursor-pointer">
                             <input type="radio" name="theme" value="aurora" class="sr-only peer"
-                                   {% if page.theme == 'aurora' %}checked{% endif %}>
+                                {% if page.theme == 'aurora' %}checked{% endif %}>
                             <div class="rounded-xl p-3 border-2 border-white/10 peer-checked:border-pink-500
                                         transition text-center peer-checked:bg-pink-500/10"
-                                 style="background: #0D1117;">
+                                style="background:#0D1117;">
                                 <div class="w-full h-8 rounded-lg mb-2"
-                                     style="background: linear-gradient(135deg, #7C3AED, #DB2777);"></div>
+                                    style="background:linear-gradient(135deg,#7C3AED,#DB2777);"></div>
                                 <span class="text-xs text-white">Aurora</span>
                             </div>
                         </label>
 
                     </div>
+
+                    <!-- Temas Pro -->
+                    <div class="flex items-center justify-between mb-2">
+                        <p class="text-xs text-white/30 uppercase tracking-wider">Pro</p>
+                        {% if not profile.is_pro %}
+                        <a href="{% url 'billing:pricing' %}"
+                        class="text-xs text-violet-400 hover:text-violet-300 transition">
+                            Fazer upgrade ✦
+                        </a>
+                        {% endif %}
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-3">
+
+                        {% with pro_themes=page.PRO_THEMES %}
+
+                        <!-- Midnight Purple -->
+                        <label class="{% if profile.is_pro %}cursor-pointer{% else %}cursor-not-allowed{% endif %}">
+                            {% if profile.is_pro %}
+                            <input type="radio" name="theme" value="midnight-purple" class="sr-only peer"
+                                {% if page.theme == 'midnight-purple' %}checked{% endif %}>
+                            {% endif %}
+                            <div class="rounded-xl p-3 border-2 transition text-center relative
+                                        {% if profile.is_pro %}border-white/10 peer-checked:border-violet-400 peer-checked:bg-violet-500/10
+                                        {% else %}border-white/5 opacity-50{% endif %}"
+                                style="background:#0A0010;">
+                                {% if not profile.is_pro %}<span class="absolute top-2 right-2 text-xs">🔒</span>{% endif %}
+                                <div class="w-full h-8 rounded-lg mb-2"
+                                    style="background:linear-gradient(135deg,#6D28D9,#C4B5FD);"></div>
+                                <span class="text-xs text-white">Midnight Purple</span>
+                            </div>
+                        </label>
+
+                        <!-- Solar Flare -->
+                        <label class="{% if profile.is_pro %}cursor-pointer{% else %}cursor-not-allowed{% endif %}">
+                            {% if profile.is_pro %}
+                            <input type="radio" name="theme" value="solar-flare" class="sr-only peer"
+                                {% if page.theme == 'solar-flare' %}checked{% endif %}>
+                            {% endif %}
+                            <div class="rounded-xl p-3 border-2 transition text-center relative
+                                        {% if profile.is_pro %}border-white/10 peer-checked:border-orange-400 peer-checked:bg-orange-500/10
+                                        {% else %}border-white/5 opacity-50{% endif %}"
+                                style="background:#0F0800;">
+                                {% if not profile.is_pro %}<span class="absolute top-2 right-2 text-xs">🔒</span>{% endif %}
+                                <div class="w-full h-8 rounded-lg mb-2"
+                                    style="background:linear-gradient(135deg,#EA580C,#FCD34D);"></div>
+                                <span class="text-xs text-white">Solar Flare</span>
+                            </div>
+                        </label>
+
+                        <!-- Forest Dark -->
+                        <label class="{% if profile.is_pro %}cursor-pointer{% else %}cursor-not-allowed{% endif %}">
+                            {% if profile.is_pro %}
+                            <input type="radio" name="theme" value="forest-dark" class="sr-only peer"
+                                {% if page.theme == 'forest-dark' %}checked{% endif %}>
+                            {% endif %}
+                            <div class="rounded-xl p-3 border-2 transition text-center relative
+                                        {% if profile.is_pro %}border-white/10 peer-checked:border-green-500 peer-checked:bg-green-500/10
+                                        {% else %}border-white/5 opacity-50{% endif %}"
+                                style="background:#020D05;">
+                                {% if not profile.is_pro %}<span class="absolute top-2 right-2 text-xs">🔒</span>{% endif %}
+                                <div class="w-full h-8 rounded-lg mb-2"
+                                    style="background:linear-gradient(135deg,#16A34A,#86EFAC);"></div>
+                                <span class="text-xs text-white">Forest Dark</span>
+                            </div>
+                        </label>
+
+                        <!-- Rose Gold -->
+                        <label class="{% if profile.is_pro %}cursor-pointer{% else %}cursor-not-allowed{% endif %}">
+                            {% if profile.is_pro %}
+                            <input type="radio" name="theme" value="rose-gold" class="sr-only peer"
+                                {% if page.theme == 'rose-gold' %}checked{% endif %}>
+                            {% endif %}
+                            <div class="rounded-xl p-3 border-2 transition text-center relative
+                                        {% if profile.is_pro %}border-white/10 peer-checked:border-pink-400 peer-checked:bg-pink-500/10
+                                        {% else %}border-white/5 opacity-50{% endif %}"
+                                style="background:#120008;">
+                                {% if not profile.is_pro %}<span class="absolute top-2 right-2 text-xs">🔒</span>{% endif %}
+                                <div class="w-full h-8 rounded-lg mb-2"
+                                    style="background:linear-gradient(135deg,#E11D72,#FCA5A5);"></div>
+                                <span class="text-xs text-white">Rose Gold</span>
+                            </div>
+                        </label>
+
+                        <!-- Ocean Deep -->
+                        <label class="{% if profile.is_pro %}cursor-pointer{% else %}cursor-not-allowed{% endif %}">
+                            {% if profile.is_pro %}
+                            <input type="radio" name="theme" value="ocean-deep" class="sr-only peer"
+                                {% if page.theme == 'ocean-deep' %}checked{% endif %}>
+                            {% endif %}
+                            <div class="rounded-xl p-3 border-2 transition text-center relative
+                                        {% if profile.is_pro %}border-white/10 peer-checked:border-cyan-400 peer-checked:bg-cyan-500/10
+                                        {% else %}border-white/5 opacity-50{% endif %}"
+                                style="background:#00080F;">
+                                {% if not profile.is_pro %}<span class="absolute top-2 right-2 text-xs">🔒</span>{% endif %}
+                                <div class="w-full h-8 rounded-lg mb-2"
+                                    style="background:linear-gradient(135deg,#0891B2,#67E8F9);"></div>
+                                <span class="text-xs text-white">Ocean Deep</span>
+                            </div>
+                        </label>
+
+                        <!-- Volcanic -->
+                        <label class="{% if profile.is_pro %}cursor-pointer{% else %}cursor-not-allowed{% endif %}">
+                            {% if profile.is_pro %}
+                            <input type="radio" name="theme" value="volcanic" class="sr-only peer"
+                                {% if page.theme == 'volcanic' %}checked{% endif %}>
+                            {% endif %}
+                            <div class="rounded-xl p-3 border-2 transition text-center relative
+                                        {% if profile.is_pro %}border-white/10 peer-checked:border-red-500 peer-checked:bg-red-500/10
+                                        {% else %}border-white/5 opacity-50{% endif %}"
+                                style="background:#0F0200;">
+                                {% if not profile.is_pro %}<span class="absolute top-2 right-2 text-xs">🔒</span>{% endif %}
+                                <div class="w-full h-8 rounded-lg mb-2"
+                                    style="background:linear-gradient(135deg,#DC2626,#FB923C);"></div>
+                                <span class="text-xs text-white">Volcanic</span>
+                            </div>
+                        </label>
+
+                        <!-- Arctic -->
+                        <label class="{% if profile.is_pro %}cursor-pointer{% else %}cursor-not-allowed{% endif %}">
+                            {% if profile.is_pro %}
+                            <input type="radio" name="theme" value="arctic" class="sr-only peer"
+                                {% if page.theme == 'arctic' %}checked{% endif %}>
+                            {% endif %}
+                            <div class="rounded-xl p-3 border-2 transition text-center relative
+                                        {% if profile.is_pro %}border-white/10 peer-checked:border-blue-300 peer-checked:bg-blue-400/10
+                                        {% else %}border-white/5 opacity-50{% endif %}"
+                                style="background:#00050F;">
+                                {% if not profile.is_pro %}<span class="absolute top-2 right-2 text-xs">🔒</span>{% endif %}
+                                <div class="w-full h-8 rounded-lg mb-2"
+                                    style="background:linear-gradient(135deg,#3B82F6,#BAE6FD);"></div>
+                                <span class="text-xs text-white">Arctic</span>
+                            </div>
+                        </label>
+
+                        <!-- Tokyo Night -->
+                        <label class="{% if profile.is_pro %}cursor-pointer{% else %}cursor-not-allowed{% endif %}">
+                            {% if profile.is_pro %}
+                            <input type="radio" name="theme" value="tokyo-night" class="sr-only peer"
+                                {% if page.theme == 'tokyo-night' %}checked{% endif %}>
+                            {% endif %}
+                            <div class="rounded-xl p-3 border-2 transition text-center relative
+                                        {% if profile.is_pro %}border-white/10 peer-checked:border-purple-400 peer-checked:bg-purple-500/10
+                                        {% else %}border-white/5 opacity-50{% endif %}"
+                                style="background:#0A0014;">
+                                {% if not profile.is_pro %}<span class="absolute top-2 right-2 text-xs">🔒</span>{% endif %}
+                                <div class="w-full h-8 rounded-lg mb-2"
+                                    style="background:linear-gradient(135deg,#9333EA,#F472B6);"></div>
+                                <span class="text-xs text-white">Tokyo Night</span>
+                            </div>
+                        </label>
+
+                        <!-- Golden Hour -->
+                        <label class="{% if profile.is_pro %}cursor-pointer{% else %}cursor-not-allowed{% endif %}">
+                            {% if profile.is_pro %}
+                            <input type="radio" name="theme" value="golden-hour" class="sr-only peer"
+                                {% if page.theme == 'golden-hour' %}checked{% endif %}>
+                            {% endif %}
+                            <div class="rounded-xl p-3 border-2 transition text-center relative
+                                        {% if profile.is_pro %}border-white/10 peer-checked:border-yellow-400 peer-checked:bg-yellow-500/10
+                                        {% else %}border-white/5 opacity-50{% endif %}"
+                                style="background:#0C0800;">
+                                {% if not profile.is_pro %}<span class="absolute top-2 right-2 text-xs">🔒</span>{% endif %}
+                                <div class="w-full h-8 rounded-lg mb-2"
+                                    style="background:linear-gradient(135deg,#D97706,#FDE68A);"></div>
+                                <span class="text-xs text-white">Golden Hour</span>
+                            </div>
+                        </label>
+
+                        <!-- Matrix -->
+                        <label class="{% if profile.is_pro %}cursor-pointer{% else %}cursor-not-allowed{% endif %}">
+                            {% if profile.is_pro %}
+                            <input type="radio" name="theme" value="matrix" class="sr-only peer"
+                                {% if page.theme == 'matrix' %}checked{% endif %}>
+                            {% endif %}
+                            <div class="rounded-xl p-3 border-2 transition text-center relative
+                                        {% if profile.is_pro %}border-white/10 peer-checked:border-green-400 peer-checked:bg-green-500/10
+                                        {% else %}border-white/5 opacity-50{% endif %}"
+                                style="background:#000900;">
+                                {% if not profile.is_pro %}<span class="absolute top-2 right-2 text-xs">🔒</span>{% endif %}
+                                <div class="w-full h-8 rounded-lg mb-2"
+                                    style="background:linear-gradient(135deg,#16A34A,#4ADE80);"></div>
+                                <span class="text-xs text-white">Matrix</span>
+                            </div>
+                        </label>
+
+                        {% endwith %}
+
+                    </div>
+
+                    {% if not profile.is_pro %}
+                    <div class="mt-3 rounded-xl p-3 text-center"
+                        style="background:rgba(124,58,237,0.06); border:1px solid rgba(124,58,237,0.2);">
+                        <p class="text-xs text-white/40">
+                            🔒 10 temas exclusivos disponíveis no
+                            <a href="{% url 'billing:pricing' %}" class="text-violet-400 hover:text-violet-300">
+                                plano Pro
+                            </a>
+                        </p>
+                    </div>
+                    {% endif %}
+
                 </div>
             </div>
 
