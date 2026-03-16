@@ -236,79 +236,55 @@ class TestBK05CsvAnalytics:
         return client
 
     def test_csv_nao_retorna_desktop_hardcoded(self, logged_client, block, page):
-        """
-        O CSV não deve conter 'Desktop' hardcoded para todos os registros
-        quando não há PageView correspondente — deve retornar 'Desconhecido'.
-        """
+        """CSV deve retornar o device_type registrado diretamente no LinkClick."""
         page.is_published = True
         page.save()
 
-        # Cria um LinkClick sem PageView correspondente
         LinkClick.objects.create(
             block=block,
             ip_address='192.168.0.1',
-            user_agent='Mozilla/5.0',
+            device_type='mobile',
             referer='',
         )
 
         response = logged_client.get('/analytics/export/csv/?period=7')
         assert response.status_code == 200
 
-        content = response.content.decode('utf-8-sig')  # remove BOM
+        content = response.content.decode('utf-8-sig')
         lines = [l for l in content.splitlines() if l.strip()]
-
-        # Deve ter cabeçalho + 1 linha de dado
         assert len(lines) == 2
+        assert 'Mobile' in lines[1]
 
-        data_line = lines[1]
-        # Sem PageView correspondente → deve ser 'Desconhecido', não 'Desktop'
-        assert 'Desktop' not in data_line
-        assert 'Desconhecido' in data_line
 
     def test_csv_com_pageview_retorna_dispositivo_correto(self, logged_client, block, page):
-        """CSV deve retornar o device_type da PageView correspondente."""
-        from apps.analytics.models import PageView
-        from django.utils import timezone
-
+        """CSV deve retornar o device_type diretamente do LinkClick."""
         page.is_published = True
         page.save()
 
-        ip = '10.0.0.1'
-
-        PageView.objects.create(
-            page=page,
-            ip_anon=ip,
-            device_type='mobile',
-            referer_domain='',
-            viewed_at=timezone.now(),
-        )
         LinkClick.objects.create(
             block=block,
-            ip_address=ip,
-            user_agent='',
+            ip_address='10.0.0.1',
+            device_type='mobile',
             referer='',
         )
 
         response = logged_client.get('/analytics/export/csv/?period=7')
         content = response.content.decode('utf-8-sig')
         lines = [l for l in content.splitlines() if l.strip()]
+        assert 'Mobile' in lines[1]
+        def test_csv_cabecalho_correto(self, logged_client, page):
+            """O CSV deve ter as colunas esperadas no cabeçalho."""
+            page.is_published = True
+            page.save()
 
-        data_line = lines[1]
-        assert 'Mobile' in data_line
+            response = logged_client.get('/analytics/export/csv/?period=7')
+            content = response.content.decode('utf-8-sig')
+            header = content.splitlines()[0]
 
-    def test_csv_cabecalho_correto(self, logged_client, page):
-        """O CSV deve ter as colunas esperadas no cabeçalho."""
-        page.is_published = True
-        page.save()
-
-        response = logged_client.get('/analytics/export/csv/?period=7')
-        content = response.content.decode('utf-8-sig')
-        header = content.splitlines()[0]
-
-        assert 'Data/Hora' in header
-        assert 'Link' in header
-        assert 'Dispositivo Estimado' in header
-        assert 'Origem' in header
+            assert 'Data/Hora' in header
+            assert 'Link' in header
+            assert 'Dispositivo' in header
+            assert 'Origem' in header
 
 
 # ─── BK-06: .count() duplicado em aggregate_daily_stats ──────────────────────
@@ -345,7 +321,7 @@ class TestBK06AggregateDailyStats:
         # LinkClick usa auto_now_add=True — grava hoje.
         target = date.today()
 
-        LinkClick.objects.create(block=block, ip_address='', user_agent='', referer='')
+        LinkClick.objects.create(block=block, ip_address='', referer='')
 
         aggregate_daily_stats(page_id=page.id, target_date=str(target))
 
