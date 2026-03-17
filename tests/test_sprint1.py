@@ -15,35 +15,6 @@ from apps.pages.models import Block, LinkClick, Page
 User = get_user_model()
 
 
-# ─── Fixtures compartilhadas ──────────────────────────────────────────────────
-
-@pytest.fixture
-def user(db):
-    return User.objects.create_user(email='sprint1@test.com', password='pass123')
-
-
-@pytest.fixture
-def profile(user):
-    return Profile.objects.get(user=user)
-
-
-@pytest.fixture
-def page(user):
-    return Page.objects.get(user=user)
-
-
-@pytest.fixture
-def block(page):
-    return Block.objects.create(
-        page=page,
-        title='Link de Teste',
-        url='https://example.com',
-        block_type='link',
-        is_active=True,
-        clicks=0,
-    )
-
-
 # ─── BK-01: Race condition em Block.clicks ────────────────────────────────────
 
 class TestBK01RaceCondition:
@@ -229,11 +200,6 @@ class TestBK04Imports:
 # ─── BK-05: CSV de analytics com dispositivo correto ─────────────────────────
 
 class TestBK05CsvAnalytics:
-
-    @pytest.fixture
-    def logged_client(self, client, user):
-        client.force_login(user)
-        return client
 
     def test_csv_nao_retorna_desktop_hardcoded(self, logged_client, block, page):
         """CSV deve retornar o device_type registrado diretamente no LinkClick."""

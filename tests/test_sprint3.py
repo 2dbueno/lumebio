@@ -10,53 +10,6 @@ from apps.pages.models import Page
 
 User = get_user_model()
 
-
-# ─── Fixtures ────────────────────────────────────────────────────────────────
-
-@pytest.fixture
-def plan_free(db):
-    plan, _ = Plan.objects.get_or_create(
-        slug='free',
-        defaults={'name': 'Free', 'price_monthly': 0, 'max_links': 5, 'is_active': True},
-    )
-    return plan
-
-
-@pytest.fixture
-def plan_pro(db):
-    plan, _ = Plan.objects.get_or_create(
-        slug='pro',
-        defaults={'name': 'Pro', 'price_monthly': 29, 'max_links': None, 'is_active': True},
-    )
-    return plan
-
-
-@pytest.fixture
-def user_free(db, plan_free):
-    user = User.objects.create_user(email='free_theme@test.com', password='pass123')
-    user.profile.plan = 'free'
-    user.profile.save(update_fields=['plan'])
-    return user
-
-
-@pytest.fixture
-def user_pro(db, plan_pro):
-    user = User.objects.create_user(email='pro_theme@test.com', password='pass123')
-    user.profile.plan = 'pro'
-    user.profile.save(update_fields=['plan'])
-    return user
-
-
-@pytest.fixture
-def page_free(user_free):
-    return Page.objects.get(user=user_free)
-
-
-@pytest.fixture
-def page_pro(user_pro):
-    return Page.objects.get(user=user_pro)
-
-
 # ─── Helpers ─────────────────────────────────────────────────────────────────
 
 FREE_THEMES = ['neon-dark', 'cyber-blue', 'aurora']
