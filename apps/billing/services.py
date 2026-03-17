@@ -126,6 +126,8 @@ def activate_subscription(profile, billing_id: str, abacate_customer_id: str = '
 def cancel_subscription(profile):
     """Cancela a assinatura e faz downgrade para Free."""
     from apps.billing.models import Subscription
+    from django.utils import timezone
+    from datetime import timedelta
 
     try:
         sub = Subscription.objects.get(profile=profile)
@@ -136,6 +138,12 @@ def cancel_subscription(profile):
         pass
 
     profile.plan = 'free'
-    profile.save(update_fields=['plan'])
+
+    # Se tiver domínio customizado, agenda expiração em 15 dias
+    if profile.custom_domain:
+        profile.custom_domain_expires_at = timezone.now() + timedelta(days=15)
+        profile.save(update_fields=['plan', 'custom_domain_expires_at'])
+    else:
+        profile.save(update_fields=['plan'])
 
     logger.info(f'Assinatura cancelada: {profile.slug}')

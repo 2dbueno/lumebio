@@ -83,7 +83,13 @@
                         <a href="{% url 'billing:portal' %}"
                            class="block px-4 py-2 text-sm text-white/70 hover:text-white hover:bg-white/5 transition-colors">
                             Assinatura
+                       </a>
+                        {% if user.profile.is_pro %}
+                        <a href="{% url 'accounts:domain_settings' %}"
+                        class="block px-4 py-2 text-sm text-white/70 hover:text-white hover:bg-white/5 transition-colors">
+                            🌐 Domínio customizado
                         </a>
+                        {% endif %}
                         <hr class="border-white/10 my-1">
                         <a href="/accounts/logout/"
                            class="block px-4 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-white/5 transition-colors">

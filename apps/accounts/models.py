@@ -80,6 +80,13 @@ class Profile(BaseModel):
     marketing_consent = models.BooleanField(default=False)
     marketing_consent_at = models.DateTimeField(null=True, blank=True)
 
+    # ── Dominio customizado para usuários Pro ─────────────────────────────────────
+    custom_domain = models.CharField(max_length=255, blank=True, null=True, unique=True)
+    custom_domain_expires_at = models.DateTimeField(
+        null=True, blank=True,
+        help_text='Preenchido no downgrade. Domínio é removido após 15 dias.',
+    )
+
     class Meta:
         verbose_name = 'Perfil'
         verbose_name_plural = 'Perfis'

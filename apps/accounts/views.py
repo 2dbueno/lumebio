@@ -5,6 +5,8 @@ from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.utils import timezone
+from django.contrib import messages
+from apps.accounts.models import Profile
 
 from apps.pages.models import Page, Block, LinkClick
 from apps.analytics.models import PageView, DailyAggregate
@@ -116,3 +118,45 @@ def data_delete(request):
     user.delete()
 
     return redirect('/?conta_deletada=1')
+
+@login_required
+def domain_settings(request):
+    profile = request.user.profile
+
+    if request.method == 'POST':
+        if not profile.is_pro:
+            messages.error(request, 'Domínio customizado é exclusivo do plano Pro.')
+            return redirect('accounts:domain_settings')
+
+        domain = request.POST.get('custom_domain', '').strip().lower()
+
+        for prefix in ('https://', 'http://'):
+            if domain.startswith(prefix):
+                domain = domain[len(prefix):]
+        domain = domain.rstrip('/')
+
+        if domain:
+            import re
+            if not re.match(r'^[a-z0-9]([a-z0-9\-]{0,61}[a-z0-9])?(\.[a-z]{2,})+$', domain):
+                messages.error(request, 'Domínio inválido. Use o formato: meusite.com')
+                return render(request, 'accounts/domain_settings.html', {'profile': profile})
+
+            conflito = Profile.objects.filter(
+                custom_domain=domain
+            ).exclude(pk=profile.pk).exists()
+            if conflito:
+                messages.error(request, 'Este domínio já está em uso por outro perfil.')
+                return render(request, 'accounts/domain_settings.html', {'profile': profile})
+
+            profile.custom_domain = domain
+        else:
+            profile.custom_domain = None
+
+        # Pro salvando domínio — limpa expiração
+        profile.custom_domain_expires_at = None
+        profile.save(update_fields=['custom_domain', 'custom_domain_expires_at'])
+
+        messages.success(request, 'Domínio atualizado com sucesso.')
+        return redirect('accounts:domain_settings')
+
+    return render(request, 'accounts/domain_settings.html', {'profile': profile})

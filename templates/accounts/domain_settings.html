@@ -1,0 +1,188 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 py-10">
+
+  <!-- Cabeçalho -->
+  <div class="mb-8">
+    <h1 class="text-2xl font-bold text-white">Domínio Customizado</h1>
+    <p class="text-white/40 text-sm mt-1">Conecte seu próprio domínio à sua página bio.</p>
+  </div>
+
+  <!-- Explicação -->
+  <div class="glass rounded-2xl p-6 mb-6">
+    <h2 class="text-sm font-semibold text-white uppercase tracking-wider mb-3">O que é isso?</h2>
+    <p class="text-white/60 text-sm leading-relaxed mb-3">
+      Por padrão, sua página bio fica disponível em
+      <code class="text-violet-400 bg-violet-500/10 px-1.5 py-0.5 rounded">lumebio.dev/{{ request.user.profile.slug }}</code>.
+    </p>
+    <p class="text-white/60 text-sm leading-relaxed mb-3">
+      Com um domínio customizado, você pode fazer ela aparecer no seu próprio endereço — por exemplo,
+      <code class="text-violet-400 bg-violet-500/10 px-1.5 py-0.5 rounded">bio.seusite.com.br</code>.
+      Isso passa mais credibilidade e mantém sua identidade de marca.
+    </p>
+    <p class="text-white/60 text-sm leading-relaxed">
+      Para funcionar, você precisa ter um domínio próprio e acessar o painel do seu provedor DNS
+      (Registro.br, Cloudflare, GoDaddy, etc.) para criar um registro CNAME apontando para o LumeBio.
+      As instruções aparecem logo abaixo após você salvar o domínio.
+    </p>
+  </div>
+
+  {% if not profile.is_pro %}
+  <div class="glass rounded-2xl p-6 mb-6 border border-violet-500/20">
+    <div class="flex items-start gap-3">
+      <span class="text-2xl">🔒</span>
+      <div>
+        <p class="text-white text-sm font-semibold mb-1">Recurso exclusivo do plano Pro</p>
+        <p class="text-white/50 text-sm">
+          Faça upgrade para conectar seu próprio domínio e ter uma presença profissional completa.
+        </p>
+        <a href="{% url 'billing:pricing' %}"
+           class="inline-block mt-3 px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-700
+                  text-white text-sm font-medium transition">
+          Ver planos →
+        </a>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  {% if messages %}
+    {% for message in messages %}
+    <div class="mb-4 px-4 py-3 rounded-xl text-sm flex items-center gap-2
+      {% if message.tags == 'error' %}bg-red-500/10 border border-red-500/30 text-red-400
+      {% else %}bg-green-500/10 border border-green-500/30 text-green-400{% endif %}">
+      {% if message.tags == 'error' %}⚠️{% else %}✅{% endif %}
+      {{ message }}
+    </div>
+    {% endfor %}
+  {% endif %}
+
+  <!-- Formulário -->
+  <form method="post" class="glass rounded-2xl p-6 mb-6">
+    {% csrf_token %}
+    <label class="block text-sm font-medium text-white/80 mb-1">Seu domínio</label>
+    <p class="text-white/30 text-xs mb-3">
+      Apenas o endereço, sem <code>https://</code>. Ex:
+      <code class="text-violet-400">bio.meusite.com.br</code> ou <code class="text-violet-400">meusite.com</code>
+    </p>
+    <div class="flex gap-3">
+      <input
+        type="text"
+        name="custom_domain"
+        value="{{ profile.custom_domain|default:'' }}"
+        placeholder="bio.meusite.com.br"
+        {% if not profile.is_pro %}disabled{% endif %}
+        class="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2.5
+               text-white text-sm placeholder-white/20 focus:outline-none
+               focus:border-violet-500/50 disabled:opacity-30 disabled:cursor-not-allowed"
+      >
+      <button
+        type="submit"
+        {% if not profile.is_pro %}disabled{% endif %}
+        class="flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium text-sm transition
+               bg-violet-600 hover:bg-violet-700 text-white
+               disabled:opacity-30 disabled:cursor-not-allowed">
+        Salvar domínio
+      </button>
+    </div>
+    {% if profile.is_pro and profile.custom_domain %}
+    <div class="mt-3 flex items-center gap-2">
+      <span class="w-2 h-2 rounded-full bg-yellow-400 animate-pulse"></span>
+      <span class="text-yellow-400 text-xs">Pendente de verificação DNS</span>
+    </div>
+    {% endif %}
+  </form>
+
+  <!-- Instruções DNS — só aparece após salvar um domínio -->
+  {% if profile.is_pro and profile.custom_domain %}
+  <div class="glass rounded-2xl p-6 mb-6">
+    <h2 class="text-sm font-semibold text-white uppercase tracking-wider mb-1">
+      Passo a passo — Configuração DNS
+    </h2>
+    <p class="text-white/40 text-xs mb-4">
+      Acesse o painel do seu provedor de domínio e adicione o registro abaixo.
+    </p>
+
+    <ol class="space-y-3 text-sm text-white/60 mb-5">
+      <li class="flex gap-3">
+        <span class="w-5 h-5 rounded-full bg-violet-600/30 border border-violet-500/40
+                     text-violet-300 text-xs flex items-center justify-center shrink-0 mt-0.5">1</span>
+        Acesse o painel DNS do seu provedor (Registro.br, Cloudflare, GoDaddy, etc.)
+      </li>
+      <li class="flex gap-3">
+        <span class="w-5 h-5 rounded-full bg-violet-600/30 border border-violet-500/40
+                     text-violet-300 text-xs flex items-center justify-center shrink-0 mt-0.5">2</span>
+        Crie um novo registro com os dados abaixo.
+      </li>
+      <li class="flex gap-3">
+        <span class="w-5 h-5 rounded-full bg-violet-600/30 border border-violet-500/40
+                     text-violet-300 text-xs flex items-center justify-center shrink-0 mt-0.5">3</span>
+        Aguarde a propagação — pode levar de alguns minutos até 48 horas.
+      </li>
+    </ol>
+
+    <div class="bg-black/30 rounded-xl overflow-hidden">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-white/5">
+            <th class="text-left px-4 py-2.5 text-white/30 font-medium text-xs uppercase tracking-wider">Campo</th>
+            <th class="text-left px-4 py-2.5 text-white/30 font-medium text-xs uppercase tracking-wider">Valor</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-white/5">
+          <tr>
+            <td class="px-4 py-3 text-white/50">Tipo</td>
+            <td class="px-4 py-3 text-violet-400 font-mono font-semibold">CNAME</td>
+          </tr>
+          <tr>
+            <td class="px-4 py-3 text-white/50">Nome / Host</td>
+            <td class="px-4 py-3 text-white font-mono">{{ profile.custom_domain }}</td>
+          </tr>
+          <tr>
+            <td class="px-4 py-3 text-white/50">Valor / Destino</td>
+            <td class="px-4 py-3 text-white font-mono">lumebio.dev</td>
+          </tr>
+          <tr>
+            <td class="px-4 py-3 text-white/50">TTL</td>
+            <td class="px-4 py-3 text-white font-mono">3600</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="text-white/30 text-xs mt-3">
+      ⚠️ Se usar subdomínio (ex: <code class="text-violet-400">bio.seusite.com</code>), o campo
+      <strong>Nome</strong> deve ser apenas <code class="text-violet-400">bio</code> em alguns provedores.
+      Consulte a documentação do seu provedor se tiver dúvidas.
+    </p>
+  </div>
+  {% endif %}
+
+  <!-- Aviso de expiração (Free com domínio salvo no grace period) -->
+  {% if not profile.is_pro and profile.custom_domain %}
+  <div class="glass rounded-2xl p-5 border border-yellow-500/20">
+    <div class="flex items-start gap-3">
+      <span class="text-xl">⚠️</span>
+      <div>
+        <p class="text-yellow-400 text-sm font-semibold mb-1">Domínio inativo</p>
+        <p class="text-white/50 text-sm">
+          Seu domínio <code class="text-yellow-400">{{ profile.custom_domain }}</code>
+          está salvo mas não está funcionando.
+          {% if profile.custom_domain_expires_at %}
+            Ele será removido em <strong class="text-yellow-400">{{ profile.custom_domain_expires_at|date:"d/m/Y" }}</strong>
+            caso você não reative o plano Pro.
+          {% endif %}
+        </p>
+        <a href="{% url 'billing:pricing' %}"
+           class="inline-block mt-3 px-4 py-2 rounded-xl bg-yellow-500/20 border border-yellow-500/30
+                  text-yellow-400 text-sm font-medium hover:bg-yellow-500/30 transition">
+          Reativar Pro →
+        </a>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}
