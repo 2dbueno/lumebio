@@ -85,12 +85,15 @@ class TestBK09PageModel:
         for t in FREE_THEMES:
             assert t not in Page.PRO_THEMES, f'{t} não deveria estar em PRO_THEMES'
 
+    @pytest.mark.django_db
     def test_todos_pro_themes_tem_vars_definidas(self):
-        """Cada tema Pro deve ter entrada no dict THEMES com as chaves esperadas."""
+        """Cada tema Pro deve ter registro no banco com as chaves esperadas."""
+        from apps.pages.models import Theme
         keys = {'bg', 'primary', 'accent', 'card_bg', 'card_border', 'text', 'subtext'}
         for slug in Page.PRO_THEMES:
-            assert slug in Page.THEMES, f'Tema {slug} ausente em THEMES'
-            assert keys == set(Page.THEMES[slug].keys()), \
+            theme = Theme.objects.filter(slug=slug).first()
+            assert theme is not None, f'Tema {slug} ausente no banco'
+            assert keys == set(theme.as_vars().keys()), \
                 f'Tema {slug} com chaves incorretas'
 
     def test_todos_pro_themes_estao_em_theme_choices(self):
@@ -101,9 +104,11 @@ class TestBK09PageModel:
 
     def test_get_theme_vars_retorna_fallback_para_tema_invalido(self, db, page_free):
         """get_theme_vars com tema inválido deve retornar neon-dark como fallback."""
+        from apps.pages.models import Theme
         page_free.theme = 'tema-inexistente'
+        fallback_vars = Theme.objects.get(slug='neon-dark').as_vars()
         vars = page_free.get_theme_vars()
-        assert vars['bg'] == Page.THEMES['neon-dark']['bg']
+        assert vars['bg'] == fallback_vars['bg']
 
 
 # ─── Gate na view (Free) ──────────────────────────────────────────────────────

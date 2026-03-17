@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Page, Block, LinkClick
+from .models import Page, Block, LinkClick, Theme
 
 
 class BlockInline(admin.TabularInline):
@@ -26,3 +26,10 @@ class LinkClickAdmin(admin.ModelAdmin):
     search_fields = ['ip_address', 'block__title']
     ordering = ['-clicked_at']
     readonly_fields = ['block', 'clicked_at', 'ip_address', 'device_type', 'referer']
+
+
+@admin.register(Theme)
+class ThemeAdmin(admin.ModelAdmin):
+    list_display = ['name', 'slug', 'is_pro', 'is_active']
+    list_filter  = ['is_pro', 'is_active']
+    ordering     = ['is_pro', 'name']
