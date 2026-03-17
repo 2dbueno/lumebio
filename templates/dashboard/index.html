@@ -22,7 +22,7 @@
                           text-white/60 text-sm hover:text-white hover:bg-white/10 transition">
                     🔗 /{{ profile.slug }}
                 </a>
-                <a href="{% url 'page_edit' %}"
+                <a href="{% url 'dashboard:page_edit' %}"
                    class="px-4 py-2 rounded-xl bg-violet-600/20 border border-violet-500/20
                           text-violet-300 text-sm font-medium hover:bg-violet-600/30 transition">
                     ⚙️ Editar página
@@ -84,7 +84,7 @@
                     Limite atingido — Upgrade
                 </a>
                 {% else %}
-                <a href="{% url 'block_create' %}"
+                <a href="{% url 'dashboard:block_create' %}"
                 class="px-4 py-2 rounded-xl bg-violet-600 text-white text-sm font-medium hover:bg-violet-700 transition">
                     + Novo bloco
                 </a>
@@ -128,15 +128,15 @@
                         </div>
                     </div>
                     <div class="flex items-center gap-2">
-                        <a href="{% url 'block_toggle' block.id %}"
+                        <a href="{% url 'dashboard:block_toggle' block.id %}"
                            class="text-xs px-3 py-1 rounded-lg border border-white/10 text-white/40 hover:text-white transition">
                             {% if block.is_active %}Ocultar{% else %}Ativar{% endif %}
                         </a>
-                        <a href="{% url 'block_edit' block.id %}"
+                        <a href="{% url 'dashboard:block_edit' block.id %}"
                            class="text-xs px-3 py-1 rounded-lg border border-violet-500/30 text-violet-400 hover:bg-violet-500/10 transition">
                             Editar
                         </a>
-                        <form method="post" action="{% url 'block_delete' block.id %}"
+                        <form method="post" action="{% url 'dashboard:block_delete' block.id %}"
                               onsubmit="return confirm('Remover bloco?')">
                             {% csrf_token %}
                             <button type="submit"
@@ -152,7 +152,7 @@
             <div class="text-center py-12">
                 <p class="text-4xl mb-3">🧱</p>
                 <p class="text-white/40 mb-4">Nenhum bloco ainda. Crie seu primeiro link!</p>
-                <a href="{% url 'block_create' %}"
+                <a href="{% url 'dashboard:block_create' %}"
                    class="px-6 py-2.5 rounded-xl bg-violet-600 text-white text-sm font-medium hover:bg-violet-700 transition">
                     + Criar bloco
                 </a>
@@ -173,7 +173,7 @@ if (list) {
         onEnd: function () {
             const order = [...list.querySelectorAll('[data-id]')]
                 .map(el => el.dataset.id);
-            fetch("{% url 'block_reorder' %}", {
+            fetch("{% url 'dashboard:block_reorder' %}", {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
