@@ -24,3 +24,5 @@ STORAGES = {
         'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage',
     },
 }
+
+ABACATEPAY_WEBHOOK_SECRET = 'ci-webhook-secret'
