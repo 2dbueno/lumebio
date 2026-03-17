@@ -1,5 +1,4 @@
-import json
-import logging
+import json, re, logging
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
@@ -32,6 +31,22 @@ def pricing(request):
     })
 
 
+def _limpar_cpf(cpf: str) -> str:
+    """Remove pontos e traço, retorna só dígitos."""
+    return re.sub(r'[^\d]', '', cpf)
+
+def _cpf_valido(cpf: str) -> bool:
+    """Valida CPF — formato e dígitos verificadores."""
+    cpf = _limpar_cpf(cpf)
+    if len(cpf) != 11 or cpf == cpf[0] * 11:
+        return False
+    for i in range(9, 11):
+        soma = sum(int(cpf[j]) * (i + 1 - j) for j in range(i))
+        if int(cpf[i]) != (soma * 10 % 11) % 10:
+            return False
+    return True
+
+
 @login_required
 def checkout(request):
     """
@@ -55,12 +70,22 @@ def checkout(request):
     if request.method == 'POST':
         cpf   = request.POST.get('cpf', '').strip()
         phone = request.POST.get('phone', '').strip()
-
+        
+        # em views.py, no bloco de validação do CPF
         if not profile.cpf:
             if not cpf:
                 messages.error(request, 'CPF é obrigatório para pagamento via Pix.')
                 return render(request, 'billing/checkout.html', {'plan': plan, 'profile': profile})
-            profile.cpf = cpf
+            
+            # Verifica se CPF já está em uso por outro perfil
+            from apps.accounts.models import Profile as ProfileModel
+            import re
+            cpf_limpo = re.sub(r'[^\d]', '', cpf)
+            if ProfileModel.objects.filter(cpf=cpf_limpo).exclude(pk=profile.pk).exists():
+                messages.error(request, 'Este CPF já está cadastrado em outra conta.')
+                return render(request, 'billing/checkout.html', {'plan': plan, 'profile': profile})
+            
+            profile.cpf = cpf_limpo
             profile.save(update_fields=['cpf'])
 
         if not profile.phone:
@@ -134,8 +159,8 @@ def cancel(request):
 @require_POST
 def webhook(request):
     """
-    Recebe notificações do AbacatePay.
-    Segurança: secret validado via query string (?secret=).
+    Recebe notificações do AbacatePay v2.
+    Segurança: secret via query string + HMAC opcional via X-Webhook-Signature.
     """
     # ── 1. Validar secret
     secret_recebido = request.GET.get('secret', '')
@@ -149,7 +174,15 @@ def webhook(request):
         logger.warning('Webhook recebido com secret inválido.')
         return HttpResponse(status=401)
 
-    # ── 2. Parse do payload
+    # ── 2. Validar HMAC (camada extra — recomendação AbacatePay v2)
+    signature = request.headers.get('X-Webhook-Signature', '')
+    if signature:
+        from apps.billing.services import verify_webhook_hmac
+        if not verify_webhook_hmac(request.body, signature):
+            logger.warning('Webhook com assinatura HMAC inválida.')
+            return HttpResponse(status=401)
+
+    # ── 3. Parse do payload
     try:
         payload = json.loads(request.body)
     except json.JSONDecodeError:
@@ -159,43 +192,98 @@ def webhook(request):
     dev_mode = payload.get('devMode', False)
     data     = payload.get('data', {})
 
-    logger.info(f'Webhook AbacatePay: {event} | devMode={dev_mode}')
+    logger.info(f'Webhook AbacatePay v2: {event} | devMode={dev_mode}')
 
-    # ── 3. Roteamento de eventos
-    if event == 'billing.paid':
-        billing_id     = data.get('id', '')
-        customer_id    = data.get('customer', {}).get('id', '')
-        customer_email = data.get('customer', {}).get('email', '')
+    # ── 4. Roteamento de eventos v2
+    if event == 'checkout.completed':
+        checkout       = data.get('checkout', {})
+        customer       = data.get('customer', {})
+        billing_id     = checkout.get('id', '')
+        customer_id    = customer.get('id', '')
+        customer_email = customer.get('email', '')
 
-        # Validação dos campos obrigatórios
         if not billing_id or not customer_email:
             logger.error(
-                f'Webhook billing.paid com campos faltando: '
+                f'checkout.completed com campos faltando: '
                 f'billing_id={billing_id}, email={customer_email}'
             )
-            return HttpResponse(status=200)  # 200 para não reenviar
+            return HttpResponse(status=200)
 
         try:
             from django.contrib.auth import get_user_model
             User = get_user_model()
-
             user = User.objects.get(email=customer_email)
             services.activate_subscription(user.profile, billing_id, customer_id)
-            logger.info(f'Assinatura ativada via webhook: {customer_email}')
+            logger.info(f'Assinatura ativada via webhook v2: {customer_email}')
 
         except User.DoesNotExist:
-            logger.error(f'Webhook billing.paid: usuário não encontrado — {customer_email}')
+            logger.error(f'checkout.completed: usuário não encontrado — {customer_email}')
             return HttpResponse(status=200)
 
         except Exception as e:
-            logger.error(f'Erro ao processar billing.paid: {e}')
+            logger.error(f'Erro ao processar checkout.completed: {e}')
             return HttpResponse(status=500)
 
-    elif event == 'billing.refunded':
-        # TODO: implementar lógica de reembolso
-        logger.info('billing.refunded recebido — não processado ainda.')
+    elif event == 'checkout.refunded':
+        checkout       = data.get('checkout', {})
+        customer       = data.get('customer', {})
+        billing_id     = checkout.get('id', '')
+        customer_email = customer.get('email', '')
 
-    elif event == 'billing.failed':
-        logger.info('billing.failed recebido — não processado ainda.')
+        if not billing_id or not customer_email:
+            logger.error(f'checkout.refunded com campos faltando.')
+            return HttpResponse(status=200)
+
+        try:
+            from django.contrib.auth import get_user_model
+            User = get_user_model()
+            user = User.objects.get(email=customer_email)
+            services.deactivate_subscription(user.profile, billing_id)
+            logger.info(f'Assinatura desativada por reembolso: {customer_email}')
+
+        except User.DoesNotExist:
+            logger.error(f'checkout.refunded: usuário não encontrado — {customer_email}')
+        except Exception as e:
+            logger.error(f'Erro ao processar checkout.refunded: {e}')
+            return HttpResponse(status=500)
+
+    elif event == 'checkout.disputed':
+        logger.info('checkout.disputed recebido — monitorar manualmente.')
+
+    elif event in ('subscription.completed', 'subscription.renewed'):
+        # AbacatePay gerencia recorrência — tratar igual ao checkout.completed
+        subscription = data.get('subscription', {})
+        customer     = data.get('customer', {})
+        payment      = data.get('payment', {})
+        billing_id   = payment.get('id', '')
+        customer_id  = customer.get('id', '')
+        customer_email = customer.get('email', '')
+
+        if billing_id and customer_email:
+            try:
+                from django.contrib.auth import get_user_model
+                User = get_user_model()
+                user = User.objects.get(email=customer_email)
+                services.activate_subscription(user.profile, billing_id, customer_id)
+                logger.info(f'{event} processado: {customer_email}')
+            except Exception as e:
+                logger.error(f'Erro ao processar {event}: {e}')
+                return HttpResponse(status=500)
+
+    elif event == 'subscription.cancelled':
+        customer       = data.get('customer', {})
+        customer_email = customer.get('email', '')
+        if customer_email:
+            try:
+                from django.contrib.auth import get_user_model
+                User = get_user_model()
+                user = User.objects.get(email=customer_email)
+                services.cancel_subscription(user.profile)
+                logger.info(f'Assinatura cancelada via webhook: {customer_email}')
+            except Exception as e:
+                logger.error(f'Erro ao processar subscription.cancelled: {e}')
+
+    else:
+        logger.info(f'Evento não tratado: {event}')
 
     return HttpResponse(status=200)

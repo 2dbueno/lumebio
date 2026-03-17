@@ -170,7 +170,8 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 # ── AbacatePay ────────────────────────────────────────────────────────────────
 ABACATEPAY_API_KEY = os.environ.get('ABACATEPAY_API_KEY', '')
 ABACATEPAY_WEBHOOK_SECRET = os.environ.get('ABACATEPAY_WEBHOOK_SECRET', '')
- 
+ABACATEPAY_PRODUCT_PRO_ID = os.environ.get('ABACATEPAY_PRODUCT_PRO_ID', '')
+
 # URL base do site — usada para montar return_url e completion_url no checkout
 # Em dev: http://localhost:8000 | Em prod: https://dominio.com
 SITE_URL = os.environ.get('SITE_URL', 'http://localhost:8000')

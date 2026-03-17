@@ -26,3 +26,4 @@ STORAGES = {
 }
 
 ABACATEPAY_WEBHOOK_SECRET = 'ci-webhook-secret'
+ABACATEPAY_PRODUCT_PRO_ID = 'prod_test_fake'

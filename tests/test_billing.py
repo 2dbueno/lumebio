@@ -58,13 +58,17 @@ def subscription_active(db, user, plan_pro):
     )
 
 
-def _webhook_payload(event='billing.paid', billing_id='bill_test123',
+def _webhook_payload(event='checkout.completed', billing_id='bill_test123',
                      customer_id='cust_test123', email='user@test.com'):
     return json.dumps({
         'event': event,
+        'apiVersion': 2,
         'devMode': True,
         'data': {
-            'id': billing_id,
+            'checkout': {
+                'id': billing_id,
+                'status': 'PAID',
+            },
             'customer': {
                 'id': customer_id,
                 'email': email,
@@ -177,20 +181,37 @@ class TestWebhookBillingPaid:
 class TestWebhookOtherEvents:
 
     def test_billing_refunded_retorna_200(self, client, db):
-        payload = json.dumps({'event': 'billing.refunded', 'devMode': True, 'data': {}})
+        payload = json.dumps({
+            'event': 'checkout.refunded',
+            'apiVersion': 2,
+            'devMode': True,
+            'data': {
+                'checkout': {'id': '', 'status': 'REFUNDED'},
+                'customer': {'id': '', 'email': ''},
+            },
+        })
         response = _post_webhook(client, payload)
         assert response.status_code == 200
 
     def test_billing_failed_retorna_200(self, client, db):
-        payload = json.dumps({'event': 'billing.failed', 'devMode': True, 'data': {}})
+        payload = json.dumps({
+            'event': 'checkout.disputed',
+            'apiVersion': 2,
+            'devMode': True,
+            'data': {},
+        })
         response = _post_webhook(client, payload)
         assert response.status_code == 200
 
     def test_evento_desconhecido_retorna_200(self, client, db):
-        payload = json.dumps({'event': 'billing.unknown', 'devMode': True, 'data': {}})
+        payload = json.dumps({
+            'event': 'payout.completed',
+            'apiVersion': 2,
+            'devMode': True,
+            'data': {},
+        })
         response = _post_webhook(client, payload)
         assert response.status_code == 200
-
 
 # ─── Task: charge_monthly_subscriptions ──────────────────────────────────────
 
